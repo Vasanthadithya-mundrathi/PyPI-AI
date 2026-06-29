@@ -1,0 +1,4 @@
+[project]
+name = "obfuscated-demo"
+version = "0.1.0"
+description = "Safe suspicious fixture with encoded and dynamic execution patterns."

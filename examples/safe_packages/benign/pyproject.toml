@@ -1,0 +1,4 @@
+[project]
+name = "benign-demo"
+version = "0.1.0"
+description = "Safe benign fixture for PyPi-AI."
