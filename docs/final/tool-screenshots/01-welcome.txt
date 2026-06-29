@@ -1,0 +1,30 @@
+╭────────────────────────────────── Welcome ───────────────────────────────────╮
+│                                                                              │
+│ ██████╗ ██╗   ██╗██████╗ ██╗      █████╗ ██╗                                 │
+│ ██╔══██╗╚██╗ ██╔╝██╔══██╗██║     ██╔══██╗██║                                 │
+│ ██████╔╝ ╚████╔╝ ██████╔╝██║     ███████║██║                                 │
+│ ██╔═══╝   ╚██╔╝  ██╔═══╝ ██║     ██╔══██║██║                                 │
+│ ██║        ██║   ██║     ██║     ██║  ██║██║                                 │
+│ ╚═╝        ╚═╝   ╚═╝     ╚═╝     ╚═╝  ╚═╝╚═╝                                 │
+│                                                                              │
+│ [1mPyPi-AI[0m                                                                      │
+│ Evidence-grounded static scanner for suspicious Python packages.             │
+│                                                                              │
+│ Domain: AI + Cybersecurity, Software Supply Chain Security                   │
+│ Safety: scans statically and never executes untrusted package code.          │
+│ Targets: folder, .whl, .tar.gz, .venv, installed packages.                   │
+│ AI modes: Ollama local default, deterministic only, Gemini, Ollama Cloud.    │
+│ Preferred cloud model: glm-5.2:cloud.                                        │
+│ Research anchor: CHASE and evidence-grounded LLM explanations.               │
+│                                                                              │
+│ Developers:                                                                  │
+│ - VASANTH ADITHYA - 160123749049 - vasanthfeb13@gmail.com                    │
+│ - SAI GEETHIKA - 160123749302 - yedlasaigeethika37@gmail.com                 │
+│                                                                              │
+│ Review commands:                                                             │
+│ pypi-ai scan examples/safe_packages/benign --review-mode --show-evidence     │
+│ pypi-ai scan examples/safe_packages/obfuscated --debug --trace-rules         │
+│ --explain-risk                                                               │
+│ pypi-ai scan-venv .venv --review-mode --format json                          │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯

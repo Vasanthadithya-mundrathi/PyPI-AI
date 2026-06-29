@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PyPi-AI - Welcome and About Screen</title>
+<style>
+  :root { --bg:#f4f4f2; --terminal:#151515; --ink:#e8e8e8; --muted:#9ca3af; --line:#3b3b3b; --cyan:#67e8f9; --green:#86efac; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:24px; background:var(--bg); color:#111; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+  .terminal { max-width:1280px; margin:0 auto; border:1px solid #d4d4d0; border-radius:8px; overflow:hidden; background:var(--terminal); box-shadow:0 1px 4px rgba(0,0,0,.18); }
+  .bar { height:44px; display:flex; align-items:center; gap:10px; padding:0 16px; border-bottom:1px solid var(--line); color:#d4d4d4; font-weight:800; }
+  .dot { width:14px; height:14px; border-radius:50%; display:inline-block; }
+  .red { background:#ff5f57; } .yellow { background:#ffbd2e; } .green { background:#28c840; }
+  .title { margin-left:auto; color:#d4d4d4; font-size:14px; }
+  pre { margin:0; padding:18px 22px 24px; color:var(--ink); font: 13px/1.45 "SFMono-Regular", Consolas, "Liberation Mono", monospace; white-space:pre-wrap; overflow-wrap:anywhere; tab-size:2; }
+</style>
+</head>
+<body>
+  <main class="terminal">
+    <div class="bar"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="title">PyPi-AI - Welcome and About Screen</span></div>
+    <pre>╭────────────────────────────────── Welcome ───────────────────────────────────╮
+│                                                                              │
+│ ██████╗ ██╗   ██╗██████╗ ██╗      █████╗ ██╗                                 │
+│ ██╔══██╗╚██╗ ██╔╝██╔══██╗██║     ██╔══██╗██║                                 │
+│ ██████╔╝ ╚████╔╝ ██████╔╝██║     ███████║██║                                 │
+│ ██╔═══╝   ╚██╔╝  ██╔═══╝ ██║     ██╔══██║██║                                 │
+│ ██║        ██║   ██║     ██║     ██║  ██║██║                                 │
+│ ╚═╝        ╚═╝   ╚═╝     ╚═╝     ╚═╝  ╚═╝╚═╝                                 │
+│                                                                              │
+│ <span style="font-weight:800">PyPi-AI</span>                                                                      │
+│ Evidence-grounded static scanner for suspicious Python packages.             │
+│                                                                              │
+│ Domain: AI + Cybersecurity, Software Supply Chain Security                   │
+│ Safety: scans statically and never executes untrusted package code.          │
+│ Targets: folder, .whl, .tar.gz, .venv, installed packages.                   │
+│ AI modes: Ollama local default, deterministic only, Gemini, Ollama Cloud.    │
+│ Preferred cloud model: glm-5.2:cloud.                                        │
+│ Research anchor: CHASE and evidence-grounded LLM explanations.               │
+│                                                                              │
+│ Developers:                                                                  │
+│ - VASANTH ADITHYA - 160123749049 - vasanthfeb13@gmail.com                    │
+│ - SAI GEETHIKA - 160123749302 - yedlasaigeethika37@gmail.com                 │
+│                                                                              │
+│ Review commands:                                                             │
+│ pypi-ai scan examples/safe_packages/benign --review-mode --show-evidence     │
+│ pypi-ai scan examples/safe_packages/obfuscated --debug --trace-rules         │
+│ --explain-risk                                                               │
+│ pypi-ai scan-venv .venv --review-mode --format json                          │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+</pre>
+  </main>
+</body>
+</html>

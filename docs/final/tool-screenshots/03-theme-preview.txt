@@ -1,0 +1,11 @@
+[3m                 Theme preview                  [0m
+┏━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━┓
+┃[1m [0m[1mElement [0m[1m [0m┃[1m [0m[1mStyle     [0m[1m [0m┃[1m [0m[1mExample             [0m[1m [0m┃
+┡━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━┩
+│ logo     │ bold white │ [1mPyPi-AI[0m              │
+│ option   │ cyan       │ --review-mode        │
+│ success  │ green      │ Package verified     │
+│ warning  │ yellow     │ Medium risk evidence │
+│ error    │ red        │ Install blocked      │
+│ critical │ bold red   │ [1mCritical finding[0m     │
+└──────────┴────────────┴──────────────────────┘

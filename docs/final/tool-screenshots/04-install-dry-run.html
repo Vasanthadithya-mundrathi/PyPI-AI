@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PyPi-AI - Verified Install Dry Run</title>
+<style>
+  :root { --bg:#f4f4f2; --terminal:#151515; --ink:#e8e8e8; --muted:#9ca3af; --line:#3b3b3b; --cyan:#67e8f9; --green:#86efac; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:24px; background:var(--bg); color:#111; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+  .terminal { max-width:1280px; margin:0 auto; border:1px solid #d4d4d0; border-radius:8px; overflow:hidden; background:var(--terminal); box-shadow:0 1px 4px rgba(0,0,0,.18); }
+  .bar { height:44px; display:flex; align-items:center; gap:10px; padding:0 16px; border-bottom:1px solid var(--line); color:#d4d4d4; font-weight:800; }
+  .dot { width:14px; height:14px; border-radius:50%; display:inline-block; }
+  .red { background:#ff5f57; } .yellow { background:#ffbd2e; } .green { background:#28c840; }
+  .title { margin-left:auto; color:#d4d4d4; font-size:14px; }
+  pre { margin:0; padding:18px 22px 24px; color:var(--ink); font: 13px/1.45 "SFMono-Regular", Consolas, "Liberation Mono", monospace; white-space:pre-wrap; overflow-wrap:anywhere; tab-size:2; }
+</style>
+</head>
+<body>
+  <main class="terminal">
+    <div class="bar"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="title">PyPi-AI - Verified Install Dry Run</span></div>
+    <pre>╭─────────────────────────── Verified install plan ────────────────────────────╮
+│ Package: requests                                                            │
+│ Virtual environment: .venv                                                   │
+│ Verification: download wheels first, scan statically, then install if        │
+│ allowed.                                                                     │
+│ Default AI provider for explanations: Ollama local.                          │
+│ Safety: source distributions are not installed by this command.              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+</pre>
+  </main>
+</body>
+</html>

@@ -25,7 +25,7 @@ The supplied seniors' document is a 95-page A4 final report. Its structure is fo
 | 11 | Chapter 3 - Proposed Architecture | Architecture layers, workflow, notation, formulas, security perspective | PyPi-AI scanner, evidence, AI verifier, report pipeline |
 | 12 | Chapter 4 - System Design | Use case, sequence, activity diagrams, algorithms | CLI commands, scan flow, verified install flow, report flow |
 | 13 | Chapter 5 - Implementation | Tools, setup, data processing, model/crypto implementation | Python CLI, scanner modules, safe extraction, reports, CI |
-| 14 | Chapter 6 - Results | Dataset overview, screenshots, charts, metrics, comparison | Test results, coverage, safe demo scans, edge-case validation |
+| 14 | Chapter 6 - Results | Dataset overview, screenshots, charts, metrics, comparison | Test results, coverage, safe review scans, edge-case validation |
 | 15 | Chapter 7 - Conclusion and Future Work | Summary and future scope | PyPi-AI conclusion and roadmap |
 | 16 | References | Research citations | CHASE, PyPA specs, Python tarfile docs, Ollama/Gemini docs, malware reports |
 | 17 | Plagiarism / AI Similarity / Publication | Administrative proof pages | Placeholder section for final submission attachments |
@@ -142,8 +142,14 @@ The final implementation was tested using unit tests, CLI tests, report renderin
 | Figure 4.4 | Scan-before-install workflow for package safety | `docs/assets/final-submission/verified-install-flow.svg` |
 | Figure 5.1 | Multi-format report generation from evidence | `docs/assets/final-submission/report-generation-pipeline.svg` |
 | Figure 6.1 | Verification result summary | `docs/assets/final-submission/results-verification-summary.svg` |
-| Figure 6.2 | Branch and review strategy | Mermaid |
-| Dashboard | Single-screen local PyPi-AI dashboard | `docs/DASHBOARD.md` |
+| Figure 6.2 | PyPi-AI welcome/about CLI screen | `docs/final/tool-screenshots/01-welcome.png` |
+| Figure 6.3 | Scan evidence, citations, and risk output | `docs/final/tool-screenshots/02-scan-evidence.png` |
+| Figure 6.4 | Terminal theme and severity colors | `docs/final/tool-screenshots/03-theme-preview.png` |
+| Figure 6.5 | Verified install dry-run workflow | `docs/final/tool-screenshots/04-install-dry-run.png` |
+| Figure 6.6 | Doctor and version check | `docs/final/tool-screenshots/05-doctor-version.png` |
+| Figure 6.7 | HTML evidence report preview | `docs/final/tool-screenshots/06-html-report.png` |
+| Figure 6.8 | Single-screen local dashboard | `docs/final/dashboard-local.png` |
+| Figure 6.9 | Branch and review strategy | Mermaid |
 
 ## List of Tables
 
@@ -206,7 +212,7 @@ Existing tools often focus on known vulnerabilities, dependency metadata, or bro
 
 ## 1.5 Scope of the Work
 
-The project focuses on static analysis and evidence-grounded explanation. It does not execute package code, run malware, perform live sandbox detonation, or download real malicious samples for testing. Public malicious package names are used only as examples and references. Safe synthetic packages are used for demonstrations.
+The project focuses on static analysis and evidence-grounded explanation. It does not execute package code, run malware, perform live sandbox detonation, or download real malicious samples for testing. Public malicious package names are used only as examples and references. Safe synthetic packages are used for controlled review runs.
 
 ## 1.6 Thesis Organization
 
@@ -232,7 +238,7 @@ Other relevant areas include static analysis tools, package reputation services,
 | Bandit | Python source security linting | Good general static rules | Not package-supply-chain focused by default | Adds package metadata, archive, `.venv`, and report workflow |
 | Semgrep | Pattern-based scanning | Powerful custom rules | Requires rule design and may be broad for students | Uses a focused built-in supply-chain rule set |
 | Package reputation tools | Ecosystem reputation and metadata | Useful external intelligence | May require APIs and internet services | Local-first static analysis |
-| Dynamic sandboxing | Observes runtime behavior | Can catch real execution behavior | Risky, costly, and unsafe for student demo if malware is used | PyPi-AI is static-only and safe |
+| Dynamic sandboxing | Observes runtime behavior | Can catch real execution behavior | Risky, costly, and unsafe for academic review if malware is used | PyPi-AI is static-only and safe |
 | CHASE | LLM-agent malicious package analysis | Strong research architecture | More advanced than a final-year CLI implementation | PyPi-AI adapts evidence-grounding in a student-feasible scope |
 | PyPi-AI | Evidence-grounded static package scanner | CLI, reports, `.venv`, verified install, AI verifier | Static analysis cannot observe runtime-only behavior | Safe, explainable, and review-ready |
 
@@ -255,12 +261,12 @@ The project does not download, store, import, execute, or demonstrate real malic
 
 | Gap | Explanation | PyPi-AI Response |
 |---|---|---|
-| Lack of safe demos | Real malware is unsafe for student repositories | Uses safe synthetic suspicious packages |
+| Lack of safe review fixtures | Real malware is unsafe for student repositories | Uses safe synthetic suspicious packages |
 | Weak explainability | Findings without line proof are hard to defend | Stores file path, line, snippet, rule, severity |
 | LLM hallucination risk | Free-form AI can invent claims | Evidence verifier rejects unsupported sentences |
 | Pre-installation risk | `pip install` can execute unsafe build behavior | Verified install downloads wheels first and scans them |
 | `.venv` visibility | Installed packages may already be present | `scan-venv` scans `site-packages` without imports |
-| Reviewer demo clarity | Raw JSON is not enough | Rich CLI panels, evidence tables, theme preview |
+| Reviewer clarity | Raw JSON is not enough | Rich CLI panels, evidence tables, theme preview |
 
 ---
 
@@ -431,7 +437,7 @@ The verified install command is designed to avoid installing source distribution
 |---|---|---|
 | `pypi-ai` | About screen with ASCII art, developers, safety, commands | Shows identity and project scope |
 | `pypi-ai about` | Full project information | Viva introduction |
-| `pypi-ai scan PATH` | Scan folder, wheel, or sdist | Main scanner demo |
+| `pypi-ai scan PATH` | Scan folder, wheel, or sdist | Main scanner workflow |
 | `pypi-ai scan-venv .venv` | Scan installed packages | Shows real environment visibility |
 | `pypi-ai scan-installed --python .venv/bin/python` | Derive `.venv` from Python executable | Convenience command |
 | `pypi-ai install PACKAGE` | Download, scan, then install if safe | Review 2 feature |
@@ -440,7 +446,7 @@ The verified install command is designed to avoid installing source distribution
 | `pypi-ai rules list` | Show detector catalog | Explain implementation |
 | `pypi-ai model test` | Show provider/model status | Ollama/Gemini defense |
 | `pypi-ai theme preview` | Preview CLI color scheme | Review-visible polish |
-| `pypi-ai benchmark run` | Run safe fixture benchmark | Evaluation demo |
+| `pypi-ai benchmark run` | Run safe fixture benchmark | Evaluation workflow |
 
 ## 4.6 Algorithms
 
@@ -504,7 +510,7 @@ Output: installed package or blocked decision
 | Matching | Built-in rules | Semgrep/Bandit only | Lightweight final-year implementation |
 | Reports | JSON, HTML, PDF | JSON only | Faculty submission needs formatted reports |
 | PDF | ReportLab | WeasyPrint, manual PDF | Installed and easy to automate |
-| AI default | Ollama local | Gemini-first | Local privacy and offline demo story |
+| AI default | Ollama local | Gemini-first | Local privacy and offline review story |
 | Cloud AI | Ollama Cloud / Gemini | Single provider only | Flexible provider comparison |
 | Public advisory database | OSV.dev + SQLite cache | Paid reputation APIs | Free, public, fast repeat checks |
 | User settings | `.pypi-ai.toml` | Hard-coded CLI defaults | Review-visible customization |
@@ -580,8 +586,8 @@ Output: installed package or blocked decision
 | `pyproject.toml` ignored | Folder name used as package name | Metadata reader missed TOML | Reads project name/version |
 | Invalid TOML | Scan crash | TOML parse exception | Falls back and continues scan |
 | Duplicate same-line findings | Noisy evidence table | AST visitors saw same expression | Deduped by rule/path/line/snippet |
-| GLM-5.2 cloud unavailable | Could confuse demo | Subscription required | Documented fallback `minimax-m3:cloud` |
-| Ollama local unavailable | Slow or failed demo | Real model call could wait too long | `--ai-timeout` controls fallback timing |
+| GLM-5.2 cloud unavailable | Could confuse review output | Subscription required | Documented fallback `minimax-m3:cloud` |
+| Ollama local unavailable | Slow or failed review run | Real model call could wait too long | `--ai-timeout` controls fallback timing |
 | No public advisory cache | Repeated checks need network | No local DB cache | OSV advisories cached in SQLite |
 
 ## 6.3 Feature Completion Matrix
@@ -633,7 +639,35 @@ quality gates.
 
 The dashboard is documented in `docs/DASHBOARD.md`.
 
-## 6.6 Branch and Review Strategy
+## 6.6 Tool Screenshots And Generated Reports
+
+The final repository includes reviewer-ready screenshots generated from actual
+PyPi-AI command output and a local browser session. These artifacts are stored
+under `docs/final/tool-screenshots/` and `docs/final/`.
+
+| Screenshot | What It Proves | File |
+|---|---|---|
+| Welcome/About screen | Project name, developers, safety model, targets, providers | `docs/final/tool-screenshots/01-welcome.png` |
+| Scan evidence | Static scan plan, rule trace, risk score, evidence, citations | `docs/final/tool-screenshots/02-scan-evidence.png` |
+| Theme preview | Monochrome base with restrained status and severity colors | `docs/final/tool-screenshots/03-theme-preview.png` |
+| Verified install | `pypi-ai install` scan-before-install dry-run workflow | `docs/final/tool-screenshots/04-install-dry-run.png` |
+| Doctor/version | CLI version and local setup check | `docs/final/tool-screenshots/05-doctor-version.png` |
+| HTML report | Evidence-backed report rendering | `docs/final/tool-screenshots/06-html-report.png` |
+| Dashboard | Local single-screen dashboard using real PyPi-AI JSON | `docs/final/dashboard-local.png` |
+
+Generated report files:
+
+- `docs/final/reports/env-network-review.json`
+- `docs/final/reports/env-network-review.html`
+- `docs/final/reports/env-network-review.pdf`
+
+![Figure 6.2: PyPi-AI welcome/about CLI screen](docs/final/tool-screenshots/01-welcome.png)
+
+![Figure 6.3: PyPi-AI scan evidence and citations output](docs/final/tool-screenshots/02-scan-evidence.png)
+
+![Figure 6.8: PyPi-AI local dashboard](docs/final/dashboard-local.png)
+
+## 6.7 Branch and Review Strategy
 
 ```mermaid
 gitGraph

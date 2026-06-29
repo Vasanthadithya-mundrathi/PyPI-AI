@@ -1,4 +1,4 @@
-# Review Two Demo Commands
+# Review Two Commands
 
 ```bash
 uv run pypi-ai scan examples/safe_packages/env_network --review-mode --debug --trace-rules --show-evidence --explain-risk --format json

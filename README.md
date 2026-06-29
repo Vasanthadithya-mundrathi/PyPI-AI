@@ -27,6 +27,17 @@ uv run pypi-ai model test --provider ollama-cloud
 uv run pypi-ai theme preview
 ```
 
+## Final Review Artifacts
+
+- Final submission draft: [FINAL_SUBMISSION.md](FINAL_SUBMISSION.md)
+- Final review report: [docs/final/final-review-report.md](docs/final/final-review-report.md)
+- Local dashboard: [dashboard/index.html](dashboard/index.html)
+- Dashboard documentation: [docs/DASHBOARD.md](docs/DASHBOARD.md)
+- Tool screenshots: [docs/final/tool-screenshots/README.md](docs/final/tool-screenshots/README.md)
+- Generated JSON/HTML/PDF report: [docs/final/reports](docs/final/reports)
+
+![PyPi-AI dashboard](docs/final/dashboard-local.png)
+
 ## Safety
 
 PyPi-AI never installs, imports, or executes scanned package code. Findings are

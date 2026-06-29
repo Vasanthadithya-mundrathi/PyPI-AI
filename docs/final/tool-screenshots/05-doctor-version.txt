@@ -1,0 +1,5 @@
+PyPi-AI 0.1.0
+PyPi-AI [1m0.1[0m.[1m0[0m
+Python: [1m3.11[0m.[1m14[0m
+Static scanner: available
+deterministic evidence-only mode is available

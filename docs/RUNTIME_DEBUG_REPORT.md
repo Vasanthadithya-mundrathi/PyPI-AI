@@ -61,6 +61,18 @@ and important options.
 
 ## Final Recommendation
 
-Use Ollama local for normal faculty demos. Use Ollama Cloud with
+Use Ollama local for normal faculty review runs. Use Ollama Cloud with
 `glm-5.2:cloud` only after subscription access is enabled. Until then,
 `minimax-m3:cloud` is the working cloud fallback on this machine.
+
+## Screenshot Artifacts
+
+| Artifact | Path |
+|---|---|
+| Welcome/about CLI screen | `docs/final/tool-screenshots/01-welcome.png` |
+| Scan evidence and citations | `docs/final/tool-screenshots/02-scan-evidence.png` |
+| Theme preview | `docs/final/tool-screenshots/03-theme-preview.png` |
+| Verified install dry run | `docs/final/tool-screenshots/04-install-dry-run.png` |
+| Version and doctor check | `docs/final/tool-screenshots/05-doctor-version.png` |
+| HTML report preview | `docs/final/tool-screenshots/06-html-report.png` |
+| Local dashboard | `docs/final/dashboard-local.png` |

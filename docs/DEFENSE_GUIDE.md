@@ -55,7 +55,7 @@ PyPi-AI is static-only:
 - It does not run package functions.
 - It extracts archives into scanner-owned temporary directories.
 
-This makes the demo safe for faculty review and avoids putting real malware in
+This makes the review run safe for faculty review and avoids putting real malware in
 the repository.
 
 ## Static Scan Flow
@@ -126,7 +126,7 @@ uv run pypi-ai database check requests
 
 OSV responses are cached in local SQLite at
 `.pypi-ai-cache/advisories.sqlite3` by default. This makes repeated package
-checks faster and keeps a local verification trail for demos.
+checks faster and keeps a local verification trail for reviews.
 
 ## `.venv` Scanning
 
@@ -144,7 +144,7 @@ flowchart LR
     AST --> Evidence["Evidence records"]
 ```
 
-## Review Demo Script
+## Review Script
 
 ```bash
 uv run pypi-ai
@@ -152,7 +152,7 @@ uv run pypi-ai rules list
 uv run pypi-ai examples list
 uv run pypi-ai scan examples/safe_packages/benign --review-mode --show-evidence
 uv run pypi-ai scan examples/safe_packages/env_network --review-mode --debug --trace-rules --show-evidence --show-citations --explain-risk
-uv run pypi-ai scan examples/safe_packages/obfuscated --review-mode --debug --trace-rules --show-evidence --format all --output reports/obfuscated-demo
+uv run pypi-ai scan examples/safe_packages/obfuscated --review-mode --debug --trace-rules --show-evidence --format all --output reports/obfuscated-review
 uv run pypi-ai scan examples/safe_packages/benign --check-osv --show-citations
 uv run pypi-ai database check requests
 uv run pypi-ai config init

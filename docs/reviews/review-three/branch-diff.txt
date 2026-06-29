@@ -11,9 +11,9 @@ README.md                                          | 16 ++
 docs/DEFENSE_GUIDE.md                              | 31 ++-
 docs/ONE_YEAR_PROGRESS_REPORT.md                   | 23 ++-
 docs/final/final-review-report.md                  | 21 ++
-docs/reviews/review-one/*                          | review report, demo commands, diff log
-docs/reviews/review-two/*                          | review report, demo commands, diff log
-docs/reviews/review-three/*                        | review report, demo commands, diff log
+docs/reviews/review-one/*                          | review report, review commands, diff log
+docs/reviews/review-two/*                          | review report, review commands, diff log
+docs/reviews/review-three/*                        | review report, review commands, diff log
 src/pypi_ai/ai.py                                  | 170 +++++++++++++++
 src/pypi_ai/analyzer.py                            | 81 ++++++--
 src/pypi_ai/cli.py                                 | 116 ++++++++++-

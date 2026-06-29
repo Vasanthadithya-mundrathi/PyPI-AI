@@ -1,0 +1,8 @@
+╭─────────────────────────── Verified install plan ────────────────────────────╮
+│ Package: requests                                                            │
+│ Virtual environment: .venv                                                   │
+│ Verification: download wheels first, scan statically, then install if        │
+│ allowed.                                                                     │
+│ Default AI provider for explanations: Ollama local.                          │
+│ Safety: source distributions are not installed by this command.              │
+╰──────────────────────────────────────────────────────────────────────────────╯

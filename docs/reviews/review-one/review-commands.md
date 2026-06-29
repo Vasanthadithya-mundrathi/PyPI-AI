@@ -1,4 +1,4 @@
-# Review One Demo Commands
+# Review One Commands
 
 ```bash
 uv run pypi-ai
