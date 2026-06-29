@@ -7,9 +7,6 @@ provider; Ollama Cloud prefers `glm-5.2:cloud` when the account has access, with
 `minimax-m3:cloud` documented as the tested fallback on this machine. Gemini is
 kept as an optional API-key backed provider.
 
-Project naming note: **PyPi-AI** is the implementation and repository name of
-the **PyPI-Guardian** final-year project concept.
-
 ## Developers
 
 - VASANTH ADITHYA - 160123749049 - vasanthfeb13@gmail.com
@@ -19,15 +16,15 @@ the **PyPI-Guardian** final-year project concept.
 
 ```bash
 ./scripts/setup.sh
-pypi-ai
-pypi-ai scan examples/safe_packages/benign --review-mode --show-evidence
-pypi-ai scan-venv .venv --review-mode --format json
-pypi-ai install requests --venv .venv
-pypi-ai scan examples/safe_packages/benign --check-osv
-pypi-ai database check requests
-pypi-ai config init
-pypi-ai model test --provider ollama-cloud
-pypi-ai theme preview
+uv run pypi-ai
+uv run pypi-ai scan examples/safe_packages/benign --review-mode --show-evidence
+uv run pypi-ai scan-venv .venv --review-mode --format json
+uv run pypi-ai install requests --venv .venv --dry-run
+uv run pypi-ai scan examples/safe_packages/benign --check-osv
+uv run pypi-ai database check requests
+uv run pypi-ai config init
+uv run pypi-ai model test --provider ollama-cloud
+uv run pypi-ai theme preview
 ```
 
 ## Safety

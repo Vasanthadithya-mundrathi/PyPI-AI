@@ -83,6 +83,12 @@ def _configure_console(force_color: bool | None = None) -> None:
     console = _make_console(force_color)
 
 
+def _version_callback(value: bool) -> None:
+    if value:
+        console.print(f"{PROJECT_NAME} {VERSION}")
+        raise typer.Exit()
+
+
 @app.callback()
 def main(
     ctx: typer.Context,
@@ -94,6 +100,15 @@ def main(
         typer.Option("--color", help="Force ANSI colors, useful when piping output to tee."),
     ] = False,
     no_color: Annotated[bool, typer.Option("--no-color", help="Disable ANSI colors.")] = False,
+    version: Annotated[
+        bool,
+        typer.Option(
+            "--version",
+            callback=_version_callback,
+            is_eager=True,
+            help="Show the PyPi-AI version and exit.",
+        ),
+    ] = False,
 ) -> None:
     if color and no_color:
         raise typer.BadParameter("Use only one of --color or --no-color")

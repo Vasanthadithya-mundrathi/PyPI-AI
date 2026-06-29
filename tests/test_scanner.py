@@ -123,11 +123,11 @@ def test_scan_path_detects_alias_aware_ast_behavior(tmp_path) -> None:
 
 
 def test_scan_path_detects_metadata_supply_chain_signals(tmp_path) -> None:
-    package_dir = tmp_path / "colourama"
+    package_dir = tmp_path / "requestz"
     package_dir.mkdir()
     (package_dir / "pyproject.toml").write_text(
         "[project]\n"
-        'name = "colourama"\n'
+        'name = "requestz"\n'
         'version = "1.0.0"\n'
         'authors = [{ name = "Alice", email = "alice@example.com" }]\n'
         'maintainers = [{ name = "Mallory", email = "mallory@other.invalid" }]\n'

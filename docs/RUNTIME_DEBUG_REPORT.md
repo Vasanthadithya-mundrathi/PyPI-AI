@@ -14,8 +14,8 @@ branch.
 
 | Check | Command | Result |
 |---|---|---|
-| Test suite baseline | `uv run pytest -q` | Final verification: 50 tests passed, 85.57% coverage. |
-| Welcome screen | `uv run pypi-ai` | Passed. ASCII art, developers, safety model, target types, and demo commands are visible. |
+| Test suite baseline | `uv run pytest -q` | Final verification: 51 tests passed, 85.77% coverage. |
+| Welcome screen | `uv run pypi-ai` | Passed. ASCII art, developers, safety model, target types, and review commands are visible. |
 | Review-mode scan | `uv run pypi-ai scan examples/safe_packages/obfuscated --review-mode --debug --trace-rules --show-evidence --explain-risk --format json` | Passed. Shows scan plan, rule trace, risk breakdown, evidence, and JSON. |
 | Verified install dry run | `uv run pypi-ai install requests --venv .venv --dry-run` | Passed. Shows download-scan-install plan without installing. |
 | GLM-5.2 cloud | `ollama run glm-5.2:cloud ...` | Failed with `403 Forbidden`; this account needs an Ollama subscription for that model. |

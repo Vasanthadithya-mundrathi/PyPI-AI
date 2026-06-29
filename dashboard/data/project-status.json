@@ -1,0 +1,111 @@
+{
+  "project": "PyPi-AI",
+  "version": "0.1.0",
+  "source": "local verification artifacts",
+  "quality_gates": [
+    {
+      "name": "Ruff",
+      "status": "pass",
+      "result": "PASS"
+    },
+    {
+      "name": "Format",
+      "status": "pass",
+      "result": "PASS"
+    },
+    {
+      "name": "MyPy",
+      "status": "pass",
+      "result": "PASS"
+    },
+    {
+      "name": "Pytest",
+      "status": "pass",
+      "result": "51 passed"
+    },
+    {
+      "name": "Coverage",
+      "status": "pass",
+      "result": "85.77%"
+    }
+  ],
+  "branches": [
+    {
+      "name": "main",
+      "commit": "7210f4a",
+      "note": "current pushed baseline before dashboard commit"
+    },
+    {
+      "name": "final-review",
+      "commit": "7210f4a",
+      "note": "matches main baseline"
+    },
+    {
+      "name": "review-one",
+      "commit": "11f873a",
+      "note": "CLI core"
+    },
+    {
+      "name": "review-two",
+      "commit": "8b5f18f",
+      "note": "debug, evidence, providers"
+    },
+    {
+      "name": "review-three",
+      "commit": "69ff863",
+      "note": "venv, reports, docs"
+    }
+  ],
+  "providers": [
+    {
+      "name": "Ollama local",
+      "primary": true,
+      "status": "default",
+      "status_class": "ok",
+      "detail": "real HTTP provider path in src/pypi_ai/ai.py"
+    },
+    {
+      "name": "Ollama Cloud",
+      "primary": false,
+      "status": "optional",
+      "status_class": "warn",
+      "detail": "real ollama CLI cloud path with deterministic fallback"
+    },
+    {
+      "name": "Gemini",
+      "primary": false,
+      "status": "optional",
+      "status_class": "warn",
+      "detail": "uses GEMINI_API_KEY when configured"
+    },
+    {
+      "name": "Deterministic",
+      "primary": false,
+      "status": "available",
+      "status_class": "ok",
+      "detail": "evidence-only fallback"
+    }
+  ],
+    "osv": {
+        "status": "not checked",
+    "status_class": "warn",
+    "source": "dashboard report was generated without --check-osv",
+    "cache_path": ".pypi-ai-cache/advisories.sqlite3",
+    "last_query": "-",
+    "advisories": 0,
+    "cache_hits": 0
+  },
+    "verified_install": {
+        "status": "tests passed",
+        "status_class": "allowed",
+        "summary": "passed",
+    "source": "pytest",
+    "notes": "Unit tests cover version output, venv creation, pip bootstrap, wheel download, scan-before-install, install, and block decisions."
+  },
+  "reports": [
+    {
+      "type": "JSON",
+      "path": "dashboard/data/latest-report.json"
+    }
+  ]
+}

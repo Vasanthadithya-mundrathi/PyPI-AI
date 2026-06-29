@@ -6,7 +6,7 @@
 ## Project Details
 
 - Project name: PyPi-AI
-- Naming note: PyPi-AI is the implementation name of the PyPI-Guardian final-year project concept.
+- Naming note: PyPi-AI is the final project, repository, CLI, and report name.
 - Domain: AI + Cybersecurity, Software Supply Chain Security
 - Developers:
   - VASANTH ADITHYA - 160123749049 - vasanthfeb13@gmail.com
@@ -106,7 +106,7 @@ flowchart TD
 | AI verifier | Passed | Rejects unsupported sentences and keeps evidence-cited explanations. |
 | AI providers | Passed | Provider transport tests verify real call path integration and deterministic fallback. |
 | OSV database | Passed | Queries public OSV-style payloads and caches advisories in SQLite. |
-| Install workflow | In progress | Tests cover venv creation, wheel download, scan-before-install, and blocking risky packages. |
+| Install workflow | Passed | Tests cover venv creation, wheel download, scan-before-install, and blocking risky packages. |
 | Coverage | Passed | Full suite remains above the 85% coverage target. |
 
 ## Final Result

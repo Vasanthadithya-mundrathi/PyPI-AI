@@ -3,8 +3,7 @@
 ## Project Identity
 
 **PyPi-AI** is an evidence-grounded static scanner for suspicious Python packages.
-It is the implementation and repository name for the **PyPI-Guardian**
-final-year project concept.
+The project name, repository name, CLI name, and report name are all **PyPi-AI**.
 
 Developers:
 

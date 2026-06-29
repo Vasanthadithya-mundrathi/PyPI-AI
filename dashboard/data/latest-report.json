@@ -1,0 +1,589 @@
+{
+  "project": {
+    "name": "PyPi-AI",
+    "version": "0.1.0",
+    "developers": [
+      {
+        "name": "VASANTH ADITHYA",
+        "roll": "160123749049",
+        "email": "vasanthfeb13@gmail.com"
+      },
+      {
+        "name": "SAI GEETHIKA",
+        "roll": "160123749302",
+        "email": "yedlasaigeethika37@gmail.com"
+      }
+    ],
+    "safety": "Static-only scanner; never executes untrusted package code."
+  },
+  "summary": {
+    "target": "src/pypi_ai",
+    "input_type": "folder",
+    "files_scanned": 15,
+    "packages_scanned": 1,
+    "total_findings": 25
+  },
+  "risk": {
+    "score": 100,
+    "level": "critical",
+    "breakdown": {
+      "evasion": 40,
+      "credential-access": 75,
+      "network": 90,
+      "obfuscation": 105,
+      "command-execution": 75
+    }
+  },
+  "findings": [
+    {
+      "finding_id": "F001",
+      "rule_id": "PY014_IMPORT_ALIAS_RISK",
+      "severity": "low",
+      "category": "evasion",
+      "file_path": "ai.py",
+      "line_start": 10,
+      "line_end": 10,
+      "snippet": "from urllib.parse import quote, urljoin",
+      "message": "Suspicious import alias can hide command, network, or dynamic behavior.",
+      "confidence": 0.85,
+      "tags": [
+        "alias",
+        "evasion"
+      ],
+      "citations": [
+        "CHASE"
+      ],
+      "package_name": "pypi_ai",
+      "package_version": null
+    },
+    {
+      "finding_id": "F002",
+      "rule_id": "PY014_IMPORT_ALIAS_RISK",
+      "severity": "low",
+      "category": "evasion",
+      "file_path": "ai.py",
+      "line_start": 11,
+      "line_end": 11,
+      "snippet": "from urllib.request import Request, urlopen",
+      "message": "Suspicious import alias can hide command, network, or dynamic behavior.",
+      "confidence": 0.85,
+      "tags": [
+        "alias",
+        "evasion"
+      ],
+      "citations": [
+        "CHASE"
+      ],
+      "package_name": "pypi_ai",
+      "package_version": null
+    },
+    {
+      "finding_id": "F003",
+      "rule_id": "PY001_ENV_ACCESS",
+      "severity": "medium",
+      "category": "credential-access",
+      "file_path": "ai.py",
+      "line_start": 169,
+      "line_end": 169,
+      "snippet": "host = os.environ.get(\"OLLAMA_HOST\", \"http://localhost:11434\")",
+      "message": "Environment variable access was detected.",
+      "confidence": 0.85,
+      "tags": [
+        "credentials",
+        "environment"
+      ],
+      "citations": [
+        "CHASE"
+      ],
+      "package_name": "pypi_ai",
+      "package_version": null
+    },
+    {
+      "finding_id": "F004",
+      "rule_id": "PY003_NETWORK_CLIENT",
+      "severity": "medium",
+      "category": "network",
+      "file_path": "ai.py",
+      "line_start": 179,
+      "line_end": 184,
+      "snippet": "http_request = Request(\n        endpoint,\n        data=body,\n        headers={\"Content-Type\": \"application/json\", \"User-Agent\": \"PyPi-AI/0.1\"},\n        method=\"POST\",\n    )",
+      "message": "Network client behavior was detected.",
+      "confidence": 0.85,
+      "tags": [
+        "network",
+        "exfiltration-risk"
+      ],
+      "citations": [
+        "CHASE"
+      ],
+      "package_name": "pypi_ai",
+      "package_version": null
+    },
+    {
+      "finding_id": "F005",
+      "rule_id": "PY004_OBFUSCATION",
+      "severity": "medium",
+      "category": "obfuscation",
+      "file_path": "ai.py",
+      "line_start": 182,
+      "line_end": 182,
+      "snippet": "headers={\"Content-Type\": \"application/json\", \"User-Agent\": \"PyPi-AI/0.1\"},",
+      "message": "Encoding or obfuscation indicator was detected.",
+      "confidence": 0.85,
+      "tags": [
+        "obfuscation",
+        "encoding"
+      ],
+      "citations": [
+        "CHASE"
+      ],
+      "package_name": "pypi_ai",
+      "package_version": null
+    },
+    {
+      "finding_id": "F006",
+      "rule_id": "PY003_NETWORK_CLIENT",
+      "severity": "medium",
+      "category": "network",
+      "file_path": "ai.py",
+      "line_start": 185,
+      "line_end": 185,
+      "snippet": "with urlopen(http_request, timeout=request.timeout_seconds) as response:",
+      "message": "Network client behavior was detected.",
+      "confidence": 0.85,
+      "tags": [
+        "network",
+        "exfiltration-risk"
+      ],
+      "citations": [
+        "CHASE"
+      ],
+      "package_name": "pypi_ai",
+      "package_version": null
+    },
+    {
+      "finding_id": "F007",
+      "rule_id": "PY002_SUBPROCESS",
+      "severity": "high",
+      "category": "command-execution",
+      "file_path": "ai.py",
+      "line_start": 193,
+      "line_end": 199,
+      "snippet": "completed = subprocess.run(\n        [\"ollama\", \"run\", request.model, request.prompt],\n        check=False,\n        capture_output=True,\n        text=True,\n        timeout=request.timeout_seconds,\n    )",
+      "message": "Subprocess or shell command execution was detected.",
+      "confidence": 0.85,
+      "tags": [
+        "process",
+        "execution"
+      ],
+      "citations": [
+        "CHASE"
+      ],
+      "package_name": "pypi_ai",
+      "package_version": null
+    },
+    {
+      "finding_id": "F008",
+      "rule_id": "PY002_SUBPROCESS",
+      "severity": "high",
+      "category": "command-execution",
+      "file_path": "ai.py",
+      "line_start": 193,
+      "line_end": 193,
+      "snippet": "completed = subprocess.run(",
+      "message": "Subprocess or shell command execution was detected.",
+      "confidence": 0.85,
+      "tags": [
+        "process",
+        "execution"
+      ],
+      "citations": [
+        "CHASE"
+      ],
+      "package_name": "pypi_ai",
+      "package_version": null
+    },
+    {
+      "finding_id": "F009",
+      "rule_id": "PY001_ENV_ACCESS",
+      "severity": "medium",
+      "category": "credential-access",
+      "file_path": "ai.py",
+      "line_start": 207,
+      "line_end": 207,
+      "snippet": "api_key = os.environ.get(\"GEMINI_API_KEY\")",
+      "message": "Environment variable access was detected.",
+      "confidence": 0.85,
+      "tags": [
+        "credentials",
+        "environment"
+      ],
+      "citations": [
+        "CHASE"
+      ],
+      "package_name": "pypi_ai",
+      "package_version": null
+    },
+    {
+      "finding_id": "F010",
+      "rule_id": "PY003_NETWORK_CLIENT",
+      "severity": "medium",
+      "category": "network",
+      "file_path": "ai.py",
+      "line_start": 220,
+      "line_end": 225,
+      "snippet": "http_request = Request(\n        endpoint,\n        data=body,\n        headers={\"Content-Type\": \"application/json\", \"User-Agent\": \"PyPi-AI/0.1\"},\n        method=\"POST\",\n    )",
+      "message": "Network client behavior was detected.",
+      "confidence": 0.85,
+      "tags": [
+        "network",
+        "exfiltration-risk"
+      ],
+      "citations": [
+        "CHASE"
+      ],
+      "package_name": "pypi_ai",
+      "package_version": null
+    },
+    {
+      "finding_id": "F011",
+      "rule_id": "PY004_OBFUSCATION",
+      "severity": "medium",
+      "category": "obfuscation",
+      "file_path": "ai.py",
+      "line_start": 223,
+      "line_end": 223,
+      "snippet": "headers={\"Content-Type\": \"application/json\", \"User-Agent\": \"PyPi-AI/0.1\"},",
+      "message": "Encoding or obfuscation indicator was detected.",
+      "confidence": 0.85,
+      "tags": [
+        "obfuscation",
+        "encoding"
+      ],
+      "citations": [
+        "CHASE"
+      ],
+      "package_name": "pypi_ai",
+      "package_version": null
+    },
+    {
+      "finding_id": "F012",
+      "rule_id": "PY003_NETWORK_CLIENT",
+      "severity": "medium",
+      "category": "network",
+      "file_path": "ai.py",
+      "line_start": 226,
+      "line_end": 226,
+      "snippet": "with urlopen(http_request, timeout=request.timeout_seconds) as response:",
+      "message": "Network client behavior was detected.",
+      "confidence": 0.85,
+      "tags": [
+        "network",
+        "exfiltration-risk"
+      ],
+      "citations": [
+        "CHASE"
+      ],
+      "package_name": "pypi_ai",
+      "package_version": null
+    },
+    {
+      "finding_id": "F013",
+      "rule_id": "PY004_OBFUSCATION",
+      "severity": "medium",
+      "category": "obfuscation",
+      "file_path": "analyzer.py",
+      "line_start": 33,
+      "line_end": 33,
+      "snippet": "re.compile(r\"(?i)(api[_-]?key|secret|token|password)\\s*[:=]\\s*['\\\"][^'\\\"]{8,}\"),",
+      "message": "Encoding or obfuscation indicator was detected.",
+      "confidence": 0.85,
+      "tags": [
+        "obfuscation",
+        "encoding"
+      ],
+      "citations": [
+        "CHASE"
+      ],
+      "package_name": "pypi_ai",
+      "package_version": null
+    },
+    {
+      "finding_id": "F014",
+      "rule_id": "PY004_OBFUSCATION",
+      "severity": "medium",
+      "category": "obfuscation",
+      "file_path": "analyzer.py",
+      "line_start": 191,
+      "line_end": 191,
+      "snippet": "decoded = base64.b64decode(value, validate=True)",
+      "message": "Encoding or obfuscation indicator was detected.",
+      "confidence": 0.85,
+      "tags": [
+        "obfuscation",
+        "encoding"
+      ],
+      "citations": [
+        "CHASE"
+      ],
+      "package_name": "pypi_ai",
+      "package_version": null
+    },
+    {
+      "finding_id": "F015",
+      "rule_id": "PY001_ENV_ACCESS",
+      "severity": "medium",
+      "category": "credential-access",
+      "file_path": "cli.py",
+      "line_start": 68,
+      "line_end": 68,
+      "snippet": "color_setting = os.environ.get(\"PYPI_AI_COLOR\", \"\").lower()",
+      "message": "Environment variable access was detected.",
+      "confidence": 0.85,
+      "tags": [
+        "credentials",
+        "environment"
+      ],
+      "citations": [
+        "CHASE"
+      ],
+      "package_name": "pypi_ai",
+      "package_version": null
+    },
+    {
+      "finding_id": "F016",
+      "rule_id": "PY001_ENV_ACCESS",
+      "severity": "medium",
+      "category": "credential-access",
+      "file_path": "cli.py",
+      "line_start": 69,
+      "line_end": 69,
+      "snippet": "force_color_env = os.environ.get(\"FORCE_COLOR\", \"\").lower()",
+      "message": "Environment variable access was detected.",
+      "confidence": 0.85,
+      "tags": [
+        "credentials",
+        "environment"
+      ],
+      "citations": [
+        "CHASE"
+      ],
+      "package_name": "pypi_ai",
+      "package_version": null
+    },
+    {
+      "finding_id": "F017",
+      "rule_id": "PY001_ENV_ACCESS",
+      "severity": "medium",
+      "category": "credential-access",
+      "file_path": "cli.py",
+      "line_start": 76,
+      "line_end": 76,
+      "snippet": "if color_setting in {\"never\", \"0\", \"false\", \"no\"} or \"NO_COLOR\" in os.environ:",
+      "message": "Environment variable access was detected.",
+      "confidence": 0.85,
+      "tags": [
+        "credentials",
+        "environment"
+      ],
+      "citations": [
+        "CHASE"
+      ],
+      "package_name": "pypi_ai",
+      "package_version": null
+    },
+    {
+      "finding_id": "F018",
+      "rule_id": "PY004_OBFUSCATION",
+      "severity": "medium",
+      "category": "obfuscation",
+      "file_path": "cli.py",
+      "line_start": 345,
+      "line_end": 347,
+      "snippet": "output: Annotated[Path, typer.Option(\"--output\", help=\"Output base path.\")] = Path(\n        \"reports/rendered\"\n    ),",
+      "message": "Encoding or obfuscation indicator was detected.",
+      "confidence": 0.85,
+      "tags": [
+        "obfuscation",
+        "encoding"
+      ],
+      "citations": [
+        "CHASE"
+      ],
+      "package_name": "pypi_ai",
+      "package_version": null
+    },
+    {
+      "finding_id": "F019",
+      "rule_id": "PY004_OBFUSCATION",
+      "severity": "medium",
+      "category": "obfuscation",
+      "file_path": "cli.py",
+      "line_start": 346,
+      "line_end": 346,
+      "snippet": "\"reports/rendered\"",
+      "message": "Encoding or obfuscation indicator was detected.",
+      "confidence": 0.85,
+      "tags": [
+        "obfuscation",
+        "encoding"
+      ],
+      "citations": [
+        "CHASE"
+      ],
+      "package_name": "pypi_ai",
+      "package_version": null
+    },
+    {
+      "finding_id": "F020",
+      "rule_id": "PY002_SUBPROCESS",
+      "severity": "high",
+      "category": "command-execution",
+      "file_path": "installer.py",
+      "line_start": 121,
+      "line_end": 121,
+      "snippet": "completed = subprocess.run(command, check=False, capture_output=True, text=True)",
+      "message": "Subprocess or shell command execution was detected.",
+      "confidence": 0.85,
+      "tags": [
+        "process",
+        "execution"
+      ],
+      "citations": [
+        "CHASE"
+      ],
+      "package_name": "pypi_ai",
+      "package_version": null
+    },
+    {
+      "finding_id": "F021",
+      "rule_id": "PY014_IMPORT_ALIAS_RISK",
+      "severity": "low",
+      "category": "evasion",
+      "file_path": "intelligence.py",
+      "line_start": 9,
+      "line_end": 9,
+      "snippet": "from urllib.request import Request, urlopen",
+      "message": "Suspicious import alias can hide command, network, or dynamic behavior.",
+      "confidence": 0.85,
+      "tags": [
+        "alias",
+        "evasion"
+      ],
+      "citations": [
+        "CHASE"
+      ],
+      "package_name": "pypi_ai",
+      "package_version": null
+    },
+    {
+      "finding_id": "F022",
+      "rule_id": "PY003_NETWORK_CLIENT",
+      "severity": "medium",
+      "category": "network",
+      "file_path": "intelligence.py",
+      "line_start": 148,
+      "line_end": 153,
+      "snippet": "request = Request(\n        url,\n        data=payload,\n        headers={\"Content-Type\": \"application/json\", \"User-Agent\": \"PyPi-AI/0.1\"},\n        method=\"POST\",\n    )",
+      "message": "Network client behavior was detected.",
+      "confidence": 0.85,
+      "tags": [
+        "network",
+        "exfiltration-risk"
+      ],
+      "citations": [
+        "CHASE"
+      ],
+      "package_name": "pypi_ai",
+      "package_version": null
+    },
+    {
+      "finding_id": "F023",
+      "rule_id": "PY004_OBFUSCATION",
+      "severity": "medium",
+      "category": "obfuscation",
+      "file_path": "intelligence.py",
+      "line_start": 151,
+      "line_end": 151,
+      "snippet": "headers={\"Content-Type\": \"application/json\", \"User-Agent\": \"PyPi-AI/0.1\"},",
+      "message": "Encoding or obfuscation indicator was detected.",
+      "confidence": 0.85,
+      "tags": [
+        "obfuscation",
+        "encoding"
+      ],
+      "citations": [
+        "CHASE"
+      ],
+      "package_name": "pypi_ai",
+      "package_version": null
+    },
+    {
+      "finding_id": "F024",
+      "rule_id": "PY003_NETWORK_CLIENT",
+      "severity": "medium",
+      "category": "network",
+      "file_path": "intelligence.py",
+      "line_start": 154,
+      "line_end": 154,
+      "snippet": "with urlopen(request, timeout=timeout) as response:",
+      "message": "Network client behavior was detected.",
+      "confidence": 0.85,
+      "tags": [
+        "network",
+        "exfiltration-risk"
+      ],
+      "citations": [
+        "CHASE"
+      ],
+      "package_name": "pypi_ai",
+      "package_version": null
+    },
+    {
+      "finding_id": "F025",
+      "rule_id": "PY014_IMPORT_ALIAS_RISK",
+      "severity": "low",
+      "category": "evasion",
+      "file_path": "scanner.py",
+      "line_start": 9,
+      "line_end": 9,
+      "snippet": "from urllib.parse import urlparse",
+      "message": "Suspicious import alias can hide command, network, or dynamic behavior.",
+      "confidence": 0.85,
+      "tags": [
+        "alias",
+        "evasion"
+      ],
+      "citations": [
+        "CHASE"
+      ],
+      "package_name": "pypi_ai",
+      "package_version": null
+    }
+  ],
+  "scan_plan": {
+    "target": "src/pypi_ai",
+    "input_type": "folder",
+    "files_discovered": 15,
+    "safety_notes": [
+      "No package code is installed, imported, or executed.",
+      "Archives are extracted into temporary scanner-owned directories."
+    ]
+  },
+  "rule_trace": [],
+  "citations": {
+    "CHASE": "Toda, T. and Mori, T. CHASE: LLM Agents for Dissecting Malicious PyPI Packages. 2025 IEEE/ACM AIware.",
+    "PYPA_SDIST": "PyPA source distribution format specification.",
+    "PYPA_WHEEL": "PyPA binary distribution wheel format specification.",
+    "PYTHON_TARFILE": "Python tarfile extraction filters documentation.",
+    "GEMINI": "Google Gemini API structured output documentation.",
+    "OLLAMA": "Ollama API and cloud documentation.",
+    "OSV": "OSV.dev public vulnerability database and API for open-source packages.",
+    "MALWARE_EXAMPLES": "Public reports and datasets from Datadog, Unit42, Fortinet, and ReversingLabs for package-name examples only."
+  },
+  "limitations": [
+    "Static analysis can miss behavior generated at runtime.",
+    "The scanner never executes package code, so it cannot observe live network or process behavior.",
+    "AI explanations are summaries of evidence and are not independent proof."
+  ]
+}

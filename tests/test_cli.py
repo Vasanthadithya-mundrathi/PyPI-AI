@@ -34,6 +34,14 @@ def test_about_command_shows_full_project_information() -> None:
     assert "glm-5.2:cloud" in result.output
 
 
+def test_version_option_shows_project_version() -> None:
+    result = runner.invoke(app, ["--version"])
+
+    assert result.exit_code == 0
+    assert "PyPi-AI 0.1.0" in result.output
+    assert "Usage:" not in result.output
+
+
 def test_quiet_suppresses_scan_banner(tmp_path) -> None:
     package_dir = tmp_path / "pkg"
     package_dir.mkdir()

@@ -122,9 +122,9 @@ We express our sincere gratitude to our project guide, Head of the Department, P
 
 Python developers frequently rely on third-party packages from the Python Package Index (PyPI). This ecosystem accelerates development but also introduces software supply-chain risks. Attackers can publish malicious or typosquatted packages that attempt credential theft, command execution, downloader behavior, dynamic execution, obfuscation, or install-time abuse. Traditional package checks often identify known vulnerabilities or dependency issues, but they may not provide line-level evidence for suspicious package behavior before installation.
 
-**PyPi-AI** is a defensive static-analysis framework for suspicious Python package detection and is the implementation name of the **PyPI-Guardian** final-year project concept. The tool scans package folders, wheel archives, source distributions, and installed packages inside a virtual environment without importing or executing untrusted package code. It extracts metadata, analyzes Python syntax trees, identifies suspicious API usage, queries the free OSV.dev advisory database when enabled, records evidence with file paths and line numbers, computes an explainable risk score, and generates JSON, HTML, and PDF reports. An evidence-grounded AI layer uses real Ollama local calls by default, supports Ollama Cloud and Gemini as optional providers, and falls back to deterministic evidence-only output when a provider is unavailable or unsupported. The project also includes a verified install workflow, `pypi-ai install <package>`, which creates a virtual environment if needed, downloads wheels, scans them, blocks risky packages, and installs only verified wheel files.
+**PyPi-AI** is a defensive static-analysis framework for suspicious Python package detection. The tool scans package folders, wheel archives, source distributions, and installed packages inside a virtual environment without importing or executing untrusted package code. It extracts metadata, analyzes Python syntax trees, identifies suspicious API usage, queries the free OSV.dev advisory database when enabled, records evidence with file paths and line numbers, computes an explainable risk score, and generates JSON, HTML, and PDF reports. An evidence-grounded AI layer uses real Ollama local calls by default, supports Ollama Cloud and Gemini as optional providers, and falls back to deterministic evidence-only output when a provider is unavailable or unsupported. The project also includes a verified install workflow, `pypi-ai install <package>`, which creates a virtual environment if needed, downloads wheels, scans them, blocks risky packages, and installs only verified wheel files.
 
-The final implementation was tested using unit tests, CLI tests, report rendering tests, archive safety tests, `.venv` scanning tests, provider diagnostics, database/cache tests, and runtime edge-case checks. The current verified state contains **50 passing tests** with **85.57%** coverage, clean Ruff linting, clean Ruff formatting, and clean MyPy type checking.
+The final implementation was tested using unit tests, CLI tests, report rendering tests, archive safety tests, `.venv` scanning tests, provider diagnostics, database/cache tests, and runtime edge-case checks. The current verified state contains **51 passing tests** with **85.77%** coverage, clean Ruff linting, clean Ruff formatting, and clean MyPy type checking.
 
 **Keywords:** PyPI security, software supply chain, static analysis, malicious package detection, evidence grounding, Ollama, Gemini, CLI scanner, safe extraction, virtual environment scanning.
 
@@ -143,6 +143,7 @@ The final implementation was tested using unit tests, CLI tests, report renderin
 | Figure 5.1 | Multi-format report generation from evidence | `docs/assets/final-submission/report-generation-pipeline.svg` |
 | Figure 6.1 | Verification result summary | `docs/assets/final-submission/results-verification-summary.svg` |
 | Figure 6.2 | Branch and review strategy | Mermaid |
+| Dashboard | Single-screen local PyPi-AI dashboard | `docs/DASHBOARD.md` |
 
 ## List of Tables
 
@@ -229,7 +230,7 @@ Other relevant areas include static analysis tools, package reputation services,
 |---|---|---|---|---|
 | `pip-audit` / OSV-style audit | Known vulnerabilities | Strong CVE and advisory matching | Does not inspect unknown suspicious code behavior deeply | Adds static behavior evidence |
 | Bandit | Python source security linting | Good general static rules | Not package-supply-chain focused by default | Adds package metadata, archive, `.venv`, and report workflow |
-| Semgrep | Pattern-based scanning | Powerful custom rules | Requires rule design and may be broad for students | Uses a focused built-in suspicious-package rule set |
+| Semgrep | Pattern-based scanning | Powerful custom rules | Requires rule design and may be broad for students | Uses a focused built-in supply-chain rule set |
 | Package reputation tools | Ecosystem reputation and metadata | Useful external intelligence | May require APIs and internet services | Local-first static analysis |
 | Dynamic sandboxing | Observes runtime behavior | Can catch real execution behavior | Risky, costly, and unsafe for student demo if malware is used | PyPi-AI is static-only and safe |
 | CHASE | LLM-agent malicious package analysis | Strong research architecture | More advanced than a final-year CLI implementation | PyPi-AI adapts evidence-grounding in a student-feasible scope |
@@ -243,7 +244,7 @@ The project does not download, store, import, execute, or demonstrate real malic
 |---|---|---|---|
 | `ctx` | Public reports describe credential theft risk in malicious PyPI packages | Environment access, token discovery, exfiltration indicators | Name used only in documentation |
 | `aws-login0tool` | Public reports describe trojan/downloader behavior | Network client, downloader, subprocess indicators | Name used only in documentation |
-| `colourama` / `colorama`-style confusion | Public reports describe cryptojacking or typo/name-confusion campaigns | Typosquatting discussion, subprocess, persistence, network behavior | Safe synthetic fixture used instead |
+| `colorama` typo-confusion campaigns | Public reports describe typosquatting and name-confusion attacks against popular packages | Typosquatting discussion, subprocess, persistence, network behavior | Name used only in documentation |
 | `pymafka` | Public reports describe typosquatting against `PyKafka` | Typosquatting and downloader indicators | Not downloaded or scanned |
 | `VMConnect` | Public reports describe package imitation in PyPI campaigns | Metadata suspicion and staged execution behavior | Not downloaded or scanned |
 | `xinference` compromised versions | Public reports describe a compromised legitimate package release | Verified-install motivation and supply-chain risk | Not downloaded or scanned |
@@ -557,8 +558,8 @@ Output: installed package or blocked decision
 
 | Verification Gate | Command | Result |
 |---|---|---|
-| Unit and CLI tests | `uv run pytest -q` | 50 passed |
-| Coverage | pytest coverage gate | 85.57%, above 85% target |
+| Unit and CLI tests | `uv run pytest -q` | 51 passed |
+| Coverage | pytest coverage gate | 85.77%, above 85% target |
 | Lint | `uv run ruff check .` | Passed |
 | Formatting | `uv run ruff format --check .` | Passed |
 | Type checking | `uv run mypy` | Passed |
@@ -621,7 +622,18 @@ Output: installed package or blocked decision
 | CHASE-style full agent | Yes | Depends on setup | Yes | Agentic | Research-focused | Research output |
 | **PyPi-AI** | Yes, static rules + OSV advisory lookup | Yes | Yes | Yes | Yes | JSON/HTML/PDF |
 
-## 6.5 Branch and Review Strategy
+## 6.5 Single-Screen Dashboard Prototype
+
+A single-screen PyPi-AI dashboard is included under `dashboard/index.html`. The
+dashboard is not a second product name and does not replace the tested CLI. It is
+a reviewer-facing visualization layer for real PyPi-AI JSON report artifacts:
+risk score, evidence table, severity filters, verified-install status, OSV cache
+status, AI provider status, generated report artifacts, branch readiness, and
+quality gates.
+
+The dashboard is documented in `docs/DASHBOARD.md`.
+
+## 6.6 Branch and Review Strategy
 
 ```mermaid
 gitGraph
@@ -648,7 +660,7 @@ PyPi-AI successfully implements a safe, evidence-grounded static scanner for sus
 
 - Add optional Semgrep/Bandit rule import.
 - Add PyPI metadata and package reputation lookup.
-- Add dashboard UI after CLI stabilization.
+- Connect the local dashboard to additional uploaded PyPi-AI JSON report sets.
 - Add VS Code extension wrapper.
 - Add SBOM export.
 - Add larger benchmark dataset with labeled benign and synthetic suspicious packages.
@@ -718,7 +730,7 @@ Each SVG diagram also has a PNG export with the same filename plus `.png` for ea
 | `docs/assets/final-submission/provider-decision.mmd` | Mermaid source for AI provider decision diagram |
 | `docs/assets/final-submission/review-branch-strategy.mmd` | Mermaid source for branch strategy |
 
-## Appendix C - Administrative Attachments To Add Later
+## Appendix C - Administrative Attachments Checklist
 
 - Final signed certificate page.
 - Final signed declaration page.
@@ -726,3 +738,4 @@ Each SVG diagram also has a PNG export with the same filename plus `.png` for ea
 - AI similarity report.
 - Publication or paper submission status, if applicable.
 - Screenshots of CLI output and generated reports.
+- Dashboard preview screenshot from `dashboard/index.html`.

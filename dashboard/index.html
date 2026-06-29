@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PyPi-AI Dashboard</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <pre class="ascii" aria-label="PyPi-AI ASCII logo">PYPI-AI</pre>
+        <div>
+          <h1>PyPi-AI <span>v0.1.0</span></h1>
+          <p>Evidence-grounded static package scanner</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <span class="safety">STATIC-ONLY - NEVER EXECUTES</span>
+        <label class="file-button">
+          Load Report JSON
+          <input id="reportFile" type="file" accept="application/json,.json" />
+        </label>
+        <label class="file-button">
+          Load Status JSON
+          <input id="statusFile" type="file" accept="application/json,.json" />
+        </label>
+        <div class="segmented" role="group" aria-label="Dashboard mode">
+          <button class="segment active" data-mode="reviewer">Reviewer</button>
+          <button class="segment" data-mode="debug">Debug</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="dashboard">
+      <section class="kpi-grid" aria-label="Scanner summary">
+        <article class="kpi">
+          <span>Total Scans</span>
+          <strong id="totalScans">-</strong>
+          <small id="scanSource">report artifact</small>
+        </article>
+        <article class="kpi">
+          <span>Packages Scanned</span>
+          <strong id="packagesScanned">-</strong>
+          <small id="inputType">input type</small>
+        </article>
+        <article class="kpi">
+          <span>Findings</span>
+          <strong id="filteredCount">-</strong>
+          <small id="filteredHint">of 0 total</small>
+        </article>
+        <article class="kpi risk-kpi">
+          <span>Risk Score</span>
+          <strong id="riskScore">-</strong>
+          <small id="riskLevel">level</small>
+        </article>
+        <article class="kpi">
+          <span>OSV Cache Hits</span>
+          <strong id="osvCacheHits">-</strong>
+          <small id="osvHint">status artifact</small>
+        </article>
+        <article class="kpi">
+          <span>Verified Installs</span>
+          <strong id="verifiedInstalls">-</strong>
+          <small id="installHint">status artifact</small>
+        </article>
+        <article class="kpi">
+          <span>AI Provider</span>
+          <strong id="aiProvider">-</strong>
+          <small id="aiProviderHint">status artifact</small>
+        </article>
+      </section>
+
+      <section class="main-grid">
+        <article class="panel wide">
+          <div class="panel-title">
+            <h2>Risk Distribution &amp; Loaded Risk</h2>
+            <span id="trendWindow">loaded report</span>
+          </div>
+          <div class="risk-layout">
+            <div>
+              <h3>Severity Distribution</h3>
+              <div class="bar-chart" id="barChart" aria-label="Severity distribution"></div>
+            </div>
+            <div>
+              <h3>Loaded Risk Point</h3>
+              <svg id="trendChart" class="trend" viewBox="0 0 520 170" role="img" aria-label="Loaded report risk score"></svg>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-title">
+            <h2>Scan Target</h2>
+          </div>
+          <dl class="scan-meta">
+            <div><dt>target</dt><dd id="targetValue">not loaded</dd></div>
+            <div><dt>input_type</dt><dd id="targetType">not loaded</dd></div>
+            <div><dt>files</dt><dd id="filesScanned">0</dd></div>
+            <div><dt>packages</dt><dd id="scanPackages">0</dd></div>
+          </dl>
+          <div class="target-types">
+            <span class="selected">folder</span>
+            <span>.whl</span>
+            <span>.tar.gz</span>
+            <span>.venv</span>
+            <span>installed</span>
+          </div>
+          <p class="static-note">Static-only: PyPi-AI never imports or executes scanned package code.</p>
+        </article>
+      </section>
+
+      <section class="workspace-grid">
+        <article class="panel evidence-panel">
+          <div class="panel-title">
+            <h2>Evidence</h2>
+            <span id="rowCount">0 rows</span>
+          </div>
+          <div class="filters" aria-label="Evidence filters">
+            <input id="searchBox" type="search" placeholder="search package, rule, file, message" />
+            <div class="severity-filters" id="severityFilters"></div>
+            <select id="categoryFilter" aria-label="Category filter">
+              <option value="all">all categories</option>
+            </select>
+            <select id="packageFilter" aria-label="Package filter">
+              <option value="all">all packages</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Package</th>
+                  <th>Ver</th>
+                  <th>Sev</th>
+                  <th>Rule</th>
+                  <th>Category</th>
+                  <th>File</th>
+                  <th>Line</th>
+                  <th>Conf</th>
+                  <th>Cites</th>
+                  <th>Message</th>
+                </tr>
+              </thead>
+              <tbody id="evidenceRows"></tbody>
+            </table>
+          </div>
+          <div class="detail" id="findingDetail" aria-live="polite">
+            <div>
+              <h3>Finding Detail</h3>
+              <dl id="detailMeta"></dl>
+            </div>
+            <div>
+              <h3>Code Snippet</h3>
+              <pre id="detailSnippet"></pre>
+            </div>
+            <div>
+              <h3>Evidence Notes</h3>
+              <p id="detailNotes"></p>
+              <p id="detailCitations"></p>
+            </div>
+          </div>
+        </article>
+
+        <aside class="side-stack">
+          <article class="panel">
+            <div class="panel-title"><h2>Verified Install</h2></div>
+            <ol class="workflow">
+              <li>download wheel files into staging</li>
+              <li>static scan and OSV check</li>
+              <li>block, review, or install into isolated .venv</li>
+            </ol>
+            <div id="installList" class="status-list"></div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-title"><h2>AI Providers</h2></div>
+            <div id="providerList" class="provider-list"></div>
+            <p class="order">Order: ollama-local -> ollama-cloud -> gemini -> deterministic</p>
+          </article>
+        </aside>
+      </section>
+
+      <section class="bottom-grid">
+        <article class="panel">
+          <div class="panel-title"><h2>OSV Database</h2></div>
+          <dl class="compact-list" id="osvList"></dl>
+        </article>
+
+        <article class="panel">
+          <div class="panel-title"><h2>Reports</h2></div>
+          <div id="reportList" class="report-list"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-title"><h2>Branch Readiness</h2></div>
+          <div id="branchList" class="branch-list"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-title"><h2>Quality Gate</h2></div>
+          <div class="quality" id="qualityList"></div>
+        </article>
+      </section>
+
+      <section class="debug-grid hidden" id="debugGrid">
+        <article class="panel">
+          <div class="panel-title"><h2>Rule Trace</h2></div>
+          <pre id="ruleTrace">No report loaded.</pre>
+        </article>
+        <article class="panel">
+          <div class="panel-title"><h2>Scan Plan</h2></div>
+          <pre id="scanPlan">No report loaded.</pre>
+        </article>
+        <article class="panel">
+          <div class="panel-title"><h2>Provider Fallback</h2></div>
+          <pre id="providerFallback">No status artifact loaded.</pre>
+        </article>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>Developers</span>
+      <strong>VASANTH ADITHYA - 160123749049</strong>
+      <strong>SAI GEETHIKA - 160123749302</strong>
+      <span>PyPi-AI v0.1.0 - Static-Only</span>
+    </footer>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
