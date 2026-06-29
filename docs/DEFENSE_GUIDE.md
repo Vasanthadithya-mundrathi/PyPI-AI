@@ -3,6 +3,8 @@
 ## Project Identity
 
 **PyPi-AI** is an evidence-grounded static scanner for suspicious Python packages.
+It is the implementation and repository name for the **PyPI-Guardian**
+final-year project concept.
 
 Developers:
 
@@ -35,6 +37,8 @@ flowchart LR
     Extractor --> Scanner
     VenvScanner --> Scanner
     Scanner --> Evidence["Evidence Store"]
+    Scanner --> OSV["OSV.dev + SQLite Cache"]
+    OSV --> Evidence
     Evidence --> Risk["Risk Scorer"]
     Evidence --> Verifier["Evidence Verifier"]
     Verifier --> AI["Ollama Default / Gemini Optional"]
@@ -96,14 +100,34 @@ flowchart TD
 ## AI Provider Order
 
 Ollama local is the default provider because it is privacy-friendly and can run
-without sending code outside the machine. Gemini and Ollama Cloud can be enabled
-later through API keys when internet-backed explanations are required.
+without sending code outside the machine. The implementation performs real
+provider calls:
+
+- Ollama local: HTTP POST to `http://localhost:11434/api/generate`.
+- Ollama Cloud: signed-in `ollama run <model>` CLI path.
+- Gemini: Gemini API with `GEMINI_API_KEY`.
+
+If a provider fails, times out, or returns unsupported claims, PyPi-AI falls
+back to deterministic evidence-only explanation and records the fallback reason.
 
 Preferred Ollama Cloud model: `glm-5.2:cloud`.
 
 Tested fallback on this machine: `minimax-m3:cloud`. During runtime QA,
 `glm-5.2:cloud` reached Ollama Cloud but returned a subscription-required
 `403 Forbidden`; `minimax-m3:cloud` successfully completed a live cloud check.
+
+## Free Database Verification
+
+PyPi-AI can query the free OSV.dev database for public PyPI advisories:
+
+```bash
+uv run pypi-ai scan examples/safe_packages/benign --check-osv
+uv run pypi-ai database check requests
+```
+
+OSV responses are cached in local SQLite at
+`.pypi-ai-cache/advisories.sqlite3` by default. This makes repeated package
+checks faster and keeps a local verification trail for demos.
 
 ## `.venv` Scanning
 
@@ -130,6 +154,9 @@ uv run pypi-ai examples list
 uv run pypi-ai scan examples/safe_packages/benign --teacher-mode --show-evidence
 uv run pypi-ai scan examples/safe_packages/env_network --teacher-mode --debug --trace-rules --show-evidence --show-citations --explain-risk
 uv run pypi-ai scan examples/safe_packages/obfuscated --teacher-mode --debug --trace-rules --show-evidence --format all --output reports/obfuscated-demo
+uv run pypi-ai scan examples/safe_packages/benign --check-osv --show-citations
+uv run pypi-ai database check requests
+uv run pypi-ai config init
 uv run pypi-ai scan-venv .venv --teacher-mode --format json
 uv run pypi-ai install requests --venv .venv --dry-run
 uv run pypi-ai model test --provider ollama-cloud

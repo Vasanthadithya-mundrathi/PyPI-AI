@@ -103,3 +103,7 @@ class PackageMetadata:
     name: str | None
     version: str | None
     root: Path
+    authors: list[str] = field(default_factory=list)
+    maintainers: list[str] = field(default_factory=list)
+    dependencies: list[str] = field(default_factory=list)
+    urls: dict[str, str] = field(default_factory=dict)

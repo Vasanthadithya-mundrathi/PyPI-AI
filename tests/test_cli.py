@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typer.testing import CliRunner
 
+from pypi_ai.ai import Explanation
 from pypi_ai.cli import app
 
 runner = CliRunner()
@@ -161,3 +162,79 @@ def test_scan_invalid_report_format_has_clean_error(tmp_path) -> None:
     assert result.exit_code != 0
     assert "Unsupported report format" in result.output
     assert "Traceback" not in result.output
+
+
+def test_config_init_show_and_scan_ignored_rules(tmp_path) -> None:
+    config_path = tmp_path / ".pypi-ai.toml"
+
+    init_result = runner.invoke(app, ["config", "init", "--path", str(config_path)])
+
+    assert init_result.exit_code == 0
+    assert config_path.exists()
+    assert "default_provider" in config_path.read_text(encoding="utf-8")
+
+    config_path.write_text(
+        'risk_threshold = "medium"\n'
+        'default_provider = "none"\n'
+        'default_report_format = "json"\n'
+        "show_citations = true\n"
+        'ignored_rules = ["PY003_NETWORK_CLIENT"]\n'
+        'allowed_domains = ["pypi.org", "files.pythonhosted.org"]\n'
+        'theme = "default"\n',
+        encoding="utf-8",
+    )
+
+    show_result = runner.invoke(app, ["config", "show", "--path", str(config_path)])
+    assert show_result.exit_code == 0
+    assert "PY003_NETWORK_CLIENT" in show_result.output
+
+    package_dir = tmp_path / "pkg"
+    package_dir.mkdir()
+    (package_dir / "module.py").write_text(
+        "import requests\nrequests.post('https://example.invalid')\n", encoding="utf-8"
+    )
+
+    scan_result = runner.invoke(
+        app,
+        ["scan", str(package_dir), "--config", str(config_path), "--format", "json"],
+    )
+
+    assert scan_result.exit_code == 0
+    assert "PY003_NETWORK_CLIENT" not in scan_result.output
+    assert '"findings": []' in scan_result.output
+
+
+def test_scan_ai_timeout_option_is_passed_to_provider(tmp_path, monkeypatch) -> None:
+    package_dir = tmp_path / "pkg"
+    package_dir.mkdir()
+    (package_dir / "module.py").write_text("eval('1')\n", encoding="utf-8")
+    captured: list[float] = []
+
+    def fake_explain_from_evidence(
+        findings,
+        provider="deterministic",
+        model=None,
+        *,
+        transport=None,
+        timeout_seconds=20.0,
+    ):
+        _ = findings, provider, model, transport
+        captured.append(timeout_seconds)
+        return Explanation(provider="fake", sentences=[], evidence_ids=[])
+
+    monkeypatch.setattr("pypi_ai.cli.explain_from_evidence", fake_explain_from_evidence)
+
+    result = runner.invoke(
+        app,
+        [
+            "scan",
+            str(package_dir),
+            "--ai-timeout",
+            "0.25",
+            "--format",
+            "json",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert captured == [0.25]

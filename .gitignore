@@ -10,4 +10,5 @@ build/
 *.egg-info/
 reports/
 tmp/
+.pypi-ai-cache/
 .DS_Store

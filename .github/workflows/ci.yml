@@ -1,10 +1,7 @@
-name: CI
+name: PyPi-AI CI
 
 on:
   push:
-    branches:
-      - main
-      - "review/**"
   pull_request:
 
 jobs:
@@ -13,13 +10,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
-      - name: Install
-        run: uv sync --all-groups
-      - name: Ruff
-        run: uv run ruff check .
-      - name: Format check
-        run: uv run ruff format --check .
-      - name: Mypy
-        run: uv run mypy
-      - name: Tests
-        run: uv run pytest
+      - run: uv sync --all-groups
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy src/pypi_ai
+      - run: uv run pytest

@@ -11,6 +11,7 @@ from rich.panel import Panel
 from rich.table import Table
 
 from pypi_ai.ai import DEFAULT_OLLAMA_CLOUD_MODEL, explain_from_evidence, provider_health
+from pypi_ai.config import DEFAULT_CONFIG_PATH, load_config, write_default_config
 from pypi_ai.constants import (
     ASCII_ART,
     CITATIONS,
@@ -22,6 +23,7 @@ from pypi_ai.constants import (
     VERSION,
 )
 from pypi_ai.installer import InstallDecision, install_verified_package
+from pypi_ai.intelligence import DEFAULT_CACHE_PATH, Advisory, AdvisoryLookup, lookup_osv_advisories
 from pypi_ai.models import ScanResult, Severity
 from pypi_ai.reports import render_report, scan_result_from_dict
 from pypi_ai.rules import list_rules
@@ -41,6 +43,8 @@ examples_app = typer.Typer(help="List safe and public-reference examples.")
 benchmark_app = typer.Typer(help="Run local benchmark fixtures.")
 model_app = typer.Typer(help="Check AI model provider configuration.")
 theme_app = typer.Typer(help="Preview terminal colors and severity styles.")
+config_app = typer.Typer(help="Create and inspect PyPi-AI configuration.")
+database_app = typer.Typer(help="Check free public package-intelligence databases.")
 
 app.add_typer(report_app, name="report")
 app.add_typer(evidence_app, name="evidence")
@@ -49,6 +53,8 @@ app.add_typer(examples_app, name="examples")
 app.add_typer(benchmark_app, name="benchmark")
 app.add_typer(model_app, name="model")
 app.add_typer(theme_app, name="theme")
+app.add_typer(config_app, name="config")
+app.add_typer(database_app, name="database")
 
 console = Console()
 
@@ -97,19 +103,35 @@ def scan(
     dry_run: Annotated[
         bool, typer.Option("--dry-run", help="Show scan plan without scanning.")
     ] = False,
+    config_path: Annotated[
+        Path | None,
+        typer.Option("--config", help="Read defaults and ignored rules from .pypi-ai.toml."),
+    ] = None,
+    check_osv: Annotated[
+        bool,
+        typer.Option("--check-osv", help="Query OSV.dev and local SQLite advisory cache."),
+    ] = False,
+    advisory_cache: Annotated[
+        Path | None,
+        typer.Option("--advisory-cache", help="SQLite advisory cache path."),
+    ] = None,
     no_ai: Annotated[bool, typer.Option("--no-ai", help="Disable AI explanations.")] = False,
     provider: Annotated[
-        str,
+        str | None,
         typer.Option("--provider", help="AI provider: ollama-local, gemini, ollama-cloud, none."),
-    ] = "ollama-local",
+    ] = None,
     model: Annotated[
         str | None,
         typer.Option("--model", help="Provider model name, such as glm-5.2:cloud."),
     ] = None,
+    ai_timeout: Annotated[
+        float,
+        typer.Option("--ai-timeout", help="Seconds to wait before falling back from AI."),
+    ] = 3.0,
     report_format: Annotated[
-        str,
+        str | None,
         typer.Option("--format", help="Output format: json, html, pdf, all."),
-    ] = "json",
+    ] = None,
     output: Annotated[
         Path | None, typer.Option("--output", help="Output report base path.")
     ] = None,
@@ -121,7 +143,29 @@ def scan(
     """Scan a package folder, wheel, or source distribution."""
     quiet = bool(ctx.obj and ctx.obj.get("quiet"))
     try:
-        result = scan_path(target, dry_run=dry_run, trace_rules=trace_rules)
+        config = load_config(config_path)
+    except ValueError as exc:
+        raise typer.BadParameter(str(exc)) from exc
+    provider_value = provider or config.default_provider
+    report_format_value = report_format or config.default_report_format
+    show_citations_value = show_citations or config.show_citations
+    fail_on_value = fail_on or (config.risk_threshold if config_path is not None else None)
+    advisory_lookup: AdvisoryLookup | None = None
+    if check_osv or config.check_osv:
+        cache_path = advisory_cache or Path(config.advisory_cache_path)
+
+        def configured_advisory_lookup(name: str, version: str | None) -> list[Advisory]:
+            return lookup_osv_advisories(name, version, cache_path=cache_path)
+
+        advisory_lookup = configured_advisory_lookup
+    try:
+        result = scan_path(
+            target,
+            dry_run=dry_run,
+            trace_rules=trace_rules,
+            ignored_rules=config.ignored_rules,
+            advisory_lookup=advisory_lookup,
+        )
     except ValueError as exc:
         raise typer.BadParameter(str(exc)) from exc
     if teacher_mode or debug:
@@ -134,18 +178,23 @@ def scan(
         _print_risk(result)
     if show_evidence or teacher_mode:
         _print_evidence(result)
-    if show_citations:
+    if show_citations_value:
         _print_citations()
-    if not no_ai and provider != "none" and not quiet:
-        explanation = explain_from_evidence(result.findings, provider=provider, model=model)
+    if not no_ai and provider_value != "none" and not quiet:
+        explanation = explain_from_evidence(
+            result.findings,
+            provider=provider_value,
+            model=model,
+            timeout_seconds=ai_timeout,
+        )
         console.print(
             Panel(
                 "\n".join(explanation.sentences) or "No findings to explain.",
                 title="AI Explanation",
             )
         )
-    _emit_or_write_report(result, report_format, output, show_citations)
-    _handle_fail_on(result.risk.level.value, fail_on)
+    _emit_or_write_report(result, report_format_value, output, show_citations_value)
+    _handle_fail_on(result.risk.level.value, fail_on_value)
 
 
 @app.command("scan-venv")
@@ -360,6 +409,53 @@ def theme_preview() -> None:
     for element, style, example in rows:
         table.add_row(element, style, example)
     console.print(table)
+
+
+@config_app.command("init")
+def config_init(
+    path: Annotated[Path, typer.Option("--path", help="Config file path.")] = DEFAULT_CONFIG_PATH,
+    force: Annotated[bool, typer.Option("--force", help="Overwrite an existing config.")] = False,
+) -> None:
+    """Create a default .pypi-ai.toml file."""
+    try:
+        written = write_default_config(path, force=force)
+    except FileExistsError as exc:
+        raise typer.BadParameter(str(exc)) from exc
+    console.print(f"Config written: {written}")
+
+
+@config_app.command("show")
+def config_show(
+    path: Annotated[Path, typer.Option("--path", help="Config file path.")] = DEFAULT_CONFIG_PATH,
+) -> None:
+    """Show the resolved PyPi-AI config."""
+    try:
+        config = load_config(path)
+    except ValueError as exc:
+        raise typer.BadParameter(str(exc)) from exc
+    console.print_json(json.dumps(config.to_dict()))
+
+
+@database_app.command("check")
+def database_check(
+    package: Annotated[str, typer.Argument(help="PyPI package name to check in OSV.dev.")],
+    version: Annotated[str | None, typer.Option("--version", help="Optional version.")] = None,
+    cache_path: Annotated[
+        Path, typer.Option("--cache", help="SQLite advisory cache path.")
+    ] = DEFAULT_CACHE_PATH,
+) -> None:
+    """Check OSV.dev for package advisories using a local SQLite cache."""
+    advisories = lookup_osv_advisories(package, version, cache_path=cache_path)
+    table = Table(title=f"OSV advisories for {package}")
+    table.add_column("ID")
+    table.add_column("Summary")
+    table.add_column("Aliases")
+    for advisory in advisories:
+        table.add_row(advisory.advisory_id, advisory.summary, ", ".join(advisory.aliases))
+    if not advisories:
+        table.add_row("-", "No advisories returned by OSV.dev", "-")
+    console.print(table)
+    console.print(f"Cache: {cache_path}")
 
 
 @app.command()

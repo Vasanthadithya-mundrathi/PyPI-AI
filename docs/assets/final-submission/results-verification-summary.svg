@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1180" height="640" viewBox="0 0 1180 640" role="img" aria-labelledby="title desc">
   <title id="title">Verification results summary</title>
-  <desc id="desc">PyPi-AI verification results: 32 tests, 90.05 percent coverage, ruff clean, mypy clean, and live cloud fallback verified.</desc>
+  <desc id="desc">PyPi-AI verification results: 42 tests, 85.96 percent coverage, ruff clean, mypy clean, OSV database verified, and live cloud fallback verified.</desc>
   <defs>
     <style>
       .txt{font-family:Arial,Helvetica,sans-serif;fill:#111827}.title{font-size:32px;font-weight:700}.label{font-size:18px}.value{font-size:24px;font-weight:700}.axis{stroke:#111827;stroke-width:2}.bar1{fill:#0891b2}.bar2{fill:#16a34a}.bar3{fill:#64748b}.bar4{fill:#f97316}.box{fill:#f8fafc;stroke:#111827;stroke-width:2}.caption{font-size:17px;fill:#374151}
@@ -11,17 +11,17 @@
   <line x1="160" y1="480" x2="1040" y2="480" class="axis"/>
   <line x1="160" y1="150" x2="160" y2="480" class="axis"/>
   <rect x="235" y="272" width="115" height="208" class="bar1"/>
-  <text x="292" y="260" text-anchor="middle" class="txt value">32</text>
+  <text x="292" y="260" text-anchor="middle" class="txt value">42</text>
   <text x="292" y="515" text-anchor="middle" class="txt label">Tests</text>
   <rect x="435" y="185" width="115" height="295" class="bar2"/>
-  <text x="492" y="173" text-anchor="middle" class="txt value">90.05%</text>
+  <text x="492" y="173" text-anchor="middle" class="txt value">85.96%</text>
   <text x="492" y="515" text-anchor="middle" class="txt label">Coverage</text>
   <rect x="635" y="210" width="115" height="270" class="bar3"/>
   <text x="692" y="198" text-anchor="middle" class="txt value">Clean</text>
   <text x="692" y="515" text-anchor="middle" class="txt label">Ruff + Mypy</text>
   <rect x="835" y="245" width="115" height="235" class="bar4"/>
-  <text x="892" y="233" text-anchor="middle" class="txt value">Live</text>
-  <text x="892" y="515" text-anchor="middle" class="txt label">Cloud Fallback</text>
+  <text x="892" y="233" text-anchor="middle" class="txt value">OSV</text>
+  <text x="892" y="515" text-anchor="middle" class="txt label">DB + Cache</text>
   <rect x="120" y="90" width="940" height="470" rx="18" fill="none" stroke="#d1d5db" stroke-width="1"/>
   <text x="590" y="595" text-anchor="middle" class="txt caption">Figure 6.1: Verification result summary from runtime debug and test gates</text>
 </svg>

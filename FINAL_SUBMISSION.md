@@ -122,9 +122,9 @@ We express our sincere gratitude to our project guide, Head of the Department, P
 
 Python developers frequently rely on third-party packages from the Python Package Index (PyPI). This ecosystem accelerates development but also introduces software supply-chain risks. Attackers can publish malicious or typosquatted packages that attempt credential theft, command execution, downloader behavior, dynamic execution, obfuscation, or install-time abuse. Traditional package checks often identify known vulnerabilities or dependency issues, but they may not provide line-level evidence for suspicious package behavior before installation.
 
-**PyPi-AI** is a defensive static-analysis framework for suspicious Python package detection. The tool scans package folders, wheel archives, source distributions, and installed packages inside a virtual environment without importing or executing untrusted package code. It extracts metadata, analyzes Python syntax trees, identifies suspicious API usage, records evidence with file paths and line numbers, computes an explainable risk score, and generates JSON, HTML, and PDF reports. An evidence-grounded AI layer uses Ollama local by default, supports Ollama Cloud and Gemini as optional providers, and verifies that every generated explanation maps to valid evidence IDs. The project also includes a verified install workflow, `pypi-ai install <package>`, which creates a virtual environment if needed, downloads wheels, scans them, blocks risky packages, and installs only verified wheel files.
+**PyPi-AI** is a defensive static-analysis framework for suspicious Python package detection and is the implementation name of the **PyPI-Guardian** final-year project concept. The tool scans package folders, wheel archives, source distributions, and installed packages inside a virtual environment without importing or executing untrusted package code. It extracts metadata, analyzes Python syntax trees, identifies suspicious API usage, queries the free OSV.dev advisory database when enabled, records evidence with file paths and line numbers, computes an explainable risk score, and generates JSON, HTML, and PDF reports. An evidence-grounded AI layer uses real Ollama local calls by default, supports Ollama Cloud and Gemini as optional providers, and falls back to deterministic evidence-only output when a provider is unavailable or unsupported. The project also includes a verified install workflow, `pypi-ai install <package>`, which creates a virtual environment if needed, downloads wheels, scans them, blocks risky packages, and installs only verified wheel files.
 
-The final implementation was tested using unit tests, CLI tests, report rendering tests, archive safety tests, `.venv` scanning tests, provider diagnostics, and runtime edge-case checks. The current verified state contains **32 passing tests** with **90.05% coverage**, clean Ruff linting, clean Ruff formatting, and clean MyPy type checking.
+The final implementation was tested using unit tests, CLI tests, report rendering tests, archive safety tests, `.venv` scanning tests, provider diagnostics, database/cache tests, and runtime edge-case checks. The current verified state contains **42 passing tests** with coverage above the required **85%** gate, clean Ruff linting, clean Ruff formatting, and clean MyPy type checking.
 
 **Keywords:** PyPI security, software supply chain, static analysis, malicious package detection, evidence grounding, Ollama, Gemini, CLI scanner, safe extraction, virtual environment scanning.
 
@@ -197,7 +197,8 @@ Existing tools often focus on known vulnerabilities, dependency metadata, or bro
 - Store evidence with file path, line number, snippet, rule ID, severity, category, and citation IDs.
 - Generate JSON, HTML, and PDF reports.
 - Provide a polished CLI with teacher-friendly debug output.
-- Add Ollama local as the default AI provider and support Ollama Cloud/Gemini as optional providers.
+- Add real Ollama local as the default AI provider and support Ollama Cloud/Gemini as optional providers.
+- Add free OSV.dev advisory lookup with local SQLite caching for faster repeat verification.
 - Verify AI explanations against evidence IDs.
 - Add `pypi-ai install <package>` to scan wheels before installing them into `.venv`.
 - Maintain tests, coverage, linting, formatting, typing, and review branches.
@@ -291,7 +292,7 @@ flowchart LR
 
 ![Figure 3.2: Evidence verifier prevents unsupported AI claims](docs/assets/final-submission/evidence-grounding-flow.svg)
 
-The AI model is not allowed to make unsupported claims. Every sentence must cite evidence IDs such as `[F001]`. Ollama local is the default provider. Ollama Cloud prefers `glm-5.2:cloud` when the account has subscription access. Runtime debug showed that `glm-5.2:cloud` returned a subscription-required `403 Forbidden` on this machine, while `minimax-m3:cloud` successfully completed a live cloud check. Gemini is retained as an optional API-key provider.
+The AI model is not allowed to make unsupported claims. Every sentence must cite evidence IDs such as `[F001]`. Ollama local is the default provider and uses the real local Ollama HTTP API. Ollama Cloud uses the signed-in `ollama run` path and prefers `glm-5.2:cloud` when the account has subscription access. Runtime debug showed that `glm-5.2:cloud` returned a subscription-required `403 Forbidden` on this machine, while `minimax-m3:cloud` successfully completed a live cloud check. Gemini is retained as an optional API-key provider. If a provider fails, times out, or produces unsupported text, PyPi-AI records the fallback reason and uses deterministic evidence-only output.
 
 ## 3.4 Notations Used
 
@@ -504,6 +505,8 @@ Output: installed package or blocked decision
 | PDF | ReportLab | WeasyPrint, manual PDF | Installed and easy to automate |
 | AI default | Ollama local | Gemini-first | Local privacy and offline demo story |
 | Cloud AI | Ollama Cloud / Gemini | Single provider only | Flexible provider comparison |
+| Public advisory database | OSV.dev + SQLite cache | Paid reputation APIs | Free, public, fast repeat checks |
+| User settings | `.pypi-ai.toml` | Hard-coded CLI defaults | Teacher-visible customization |
 | CI | GitHub Actions | Manual testing only | Repeatable verification |
 
 ## 5.2 AI Provider Comparison
@@ -512,11 +515,11 @@ Output: installed package or blocked decision
 
 | Provider | Default Model | Status | Strength | Limitation |
 |---|---|---|---|---|
-| Ollama local | `llama3.2:latest` | Default | Local privacy, no API key required after model setup | Model quality depends on local model |
-| Ollama Cloud preferred | `glm-5.2:cloud` | Configured | Strong cloud model option | Runtime check returned `403 Forbidden` without subscription |
+| Ollama local | `llama3.2:latest` | Real HTTP call | Local privacy, no API key required after model setup | Requires local Ollama server/model |
+| Ollama Cloud preferred | `glm-5.2:cloud` | Real `ollama run` path | Strong cloud model option | Runtime check returned `403 Forbidden` without subscription |
 | Ollama Cloud fallback | `minimax-m3:cloud` | Live-tested | Worked on this machine | May differ by account/model availability |
-| Gemini | `gemini-2.5-flash` | Optional | Fast hosted model, structured output potential | Requires API key and cloud usage |
-| Deterministic | `none` | Always available | No hallucination, reproducible | No natural-language model reasoning |
+| Gemini | `gemini-2.5-flash` | Real API-key path | Fast hosted model, structured output potential | Requires `GEMINI_API_KEY` and cloud usage |
+| Deterministic | `none` | Fallback | No hallucination, reproducible | No natural-language model reasoning |
 
 ## 5.3 Report Generation Pipeline
 
@@ -534,6 +537,13 @@ Output: installed package or blocked decision
 | `PY006_UNSAFE_DESERIALIZATION` | unsafe-deserialization | medium | `pickle`, `marshal` |
 | `PY007_NATIVE_CODE` | native-code | medium | `ctypes`, `cffi` |
 | `PY008_INSTALL_TIME` | install-time-execution | high | `setup.py` execution surface |
+| `PY009_TYPOSQUAT_RISK` | package-identity | medium | package name close to popular package |
+| `PY010_SUSPICIOUS_HOMEPAGE` | package-metadata | low | shortener/raw paste/project URL |
+| `PY011_AUTHOR_MAINTAINER_MISMATCH` | package-metadata | low | author/maintainer mismatch |
+| `PY012_DEPENDENCY_CONFUSION_SIGNAL` | dependencies | medium | direct/private dependency URL |
+| `PY013_SECRET_PATTERN_IN_CODE` | credential-access | high | API key/token pattern |
+| `PY014_IMPORT_ALIAS_RISK` | evasion | low | aliased suspicious imports |
+| `PY015_OSV_ADVISORY` | public-intelligence | high | OSV.dev advisory match |
 
 ---
 
@@ -547,11 +557,13 @@ Output: installed package or blocked decision
 
 | Verification Gate | Command | Result |
 |---|---|---|
-| Unit and CLI tests | `uv run pytest -q` | 32 passed |
-| Coverage | pytest coverage gate | 90.05%, above 85% target |
+| Unit and CLI tests | `uv run pytest -q` | 42 passed |
+| Coverage | pytest coverage gate | Above 85% target |
 | Lint | `uv run ruff check .` | Passed |
 | Formatting | `uv run ruff format --check .` | Passed |
 | Type checking | `uv run mypy` | Passed |
+| OSV database + SQLite cache | Unit and scanner tests | Passed |
+| Real AI transport + fallback | Provider transport tests | Passed |
 | Ollama Cloud GLM-5.2 | `ollama run glm-5.2:cloud ...` | Reached cloud, blocked by subscription-required 403 |
 | Ollama Cloud fallback | `ollama run minimax-m3:cloud ...` | Passed live check |
 
@@ -568,6 +580,8 @@ Output: installed package or blocked decision
 | Invalid TOML | Scan crash | TOML parse exception | Falls back and continues scan |
 | Duplicate same-line findings | Noisy evidence table | AST visitors saw same expression | Deduped by rule/path/line/snippet |
 | GLM-5.2 cloud unavailable | Could confuse demo | Subscription required | Documented fallback `minimax-m3:cloud` |
+| Ollama local unavailable | Slow or failed demo | Real model call could wait too long | `--ai-timeout` controls fallback timing |
+| No public advisory cache | Repeated checks need network | No local DB cache | OSV advisories cached in SQLite |
 
 ## 6.3 Feature Completion Matrix
 
@@ -586,6 +600,10 @@ Output: installed package or blocked decision
 | PDF report | Complete | Report tests |
 | AI skill file | Complete | Skill-file tests |
 | Evidence verifier | Complete | AI tests |
+| Real Ollama/Gemini provider paths | Complete | Provider transport and fallback tests |
+| OSV database lookup | Complete | OSV client and scanner tests |
+| SQLite advisory cache | Complete | Cache round-trip tests |
+| `.pypi-ai.toml` config | Complete | CLI config tests |
 | Verified install | Complete | Installer tests |
 | Theme preview | Complete | CLI tests |
 | Runtime debug report | Complete | Manual and test verification |
@@ -601,21 +619,21 @@ Output: installed package or blocked decision
 | Bandit | Yes, source-level | If source available | Yes | No | Manual | Limited |
 | Dynamic sandbox | Yes | Risky | Runtime logs | Optional | No | Custom |
 | CHASE-style full agent | Yes | Depends on setup | Yes | Agentic | Research-focused | Research output |
-| **PyPi-AI** | Yes, static rules | Yes | Yes | Yes | Yes | JSON/HTML/PDF |
+| **PyPi-AI** | Yes, static rules + OSV advisory lookup | Yes | Yes | Yes | Yes | JSON/HTML/PDF |
 
 ## 6.5 Branch and Review Strategy
 
 ```mermaid
 gitGraph
     commit id: "Initial CLI scanner"
-    branch "review/01-cli-core"
+    branch "review-one"
     checkout main
-    branch "review/02-debug-evidence-ai"
+    branch "review-two"
     checkout main
-    branch "review/03-venv-reports-evaluation"
+    branch "review-three"
     checkout main
-    commit id: "Runtime edge-case hardening"
-    branch "review/04-runtime-debug-edgecases"
+    commit id: "Final database and docs"
+    branch "final-review"
 ```
 
 ---
@@ -669,8 +687,11 @@ External references were verified on **2026-06-29**.
 uv run pypi-ai
 uv run pypi-ai about
 uv run pypi-ai rules list
+uv run pypi-ai config init
 uv run pypi-ai theme preview
 uv run pypi-ai scan examples/safe_packages/obfuscated --teacher-mode --debug --trace-rules --show-evidence --explain-risk --format json
+uv run pypi-ai scan examples/safe_packages/benign --check-osv --show-citations
+uv run pypi-ai database check requests
 uv run pypi-ai scan-venv .venv --teacher-mode --format json
 uv run pypi-ai install requests --venv .venv --dry-run
 uv run pypi-ai model test --provider ollama-cloud

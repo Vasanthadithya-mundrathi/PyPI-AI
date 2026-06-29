@@ -4,6 +4,7 @@ from pypi_ai.ai import (
     DEFAULT_OLLAMA_CLOUD_MODEL,
     FALLBACK_OLLAMA_CLOUD_MODEL,
     EvidenceVerifier,
+    ProviderRequest,
     build_provider_prompt,
     explain_from_evidence,
     provider_health,
@@ -94,3 +95,75 @@ def test_resolve_model_defaults_to_fast_defensible_models() -> None:
     assert resolve_model("ollama-local", None) == "llama3.2:latest"
     assert resolve_model("gemini", None) == "gemini-2.5-flash"
     assert resolve_model("ollama-cloud", "minimax-m3:cloud") == "minimax-m3:cloud"
+
+
+def test_explain_from_evidence_calls_provider_transport_and_verifies_output() -> None:
+    finding = Finding(
+        finding_id="F001",
+        rule_id="PY002_SUBPROCESS",
+        severity=Severity.HIGH,
+        category="command-execution",
+        file_path="pkg/mod.py",
+        line_start=5,
+        line_end=5,
+        snippet="sp.run(['id'])",
+        message="Subprocess or shell command execution was detected.",
+        confidence=0.9,
+        tags=["process"],
+        citations=["CHASE"],
+    )
+    seen: list[ProviderRequest] = []
+
+    def fake_transport(request: ProviderRequest) -> str:
+        seen.append(request)
+        return "Subprocess execution is risky because it launches commands. [F001]\nUnsupported."
+
+    explanation = explain_from_evidence(
+        [finding],
+        provider="ollama-local",
+        model="demo-model",
+        transport=fake_transport,
+        timeout_seconds=1,
+    )
+
+    assert seen
+    assert seen[0].provider == "ollama-local"
+    assert seen[0].model == "demo-model"
+    assert "F001" in seen[0].prompt
+    assert explanation.used_fallback is False
+    assert explanation.sentences == [
+        "Subprocess execution is risky because it launches commands. [F001]"
+    ]
+
+
+def test_explain_from_evidence_falls_back_when_provider_fails() -> None:
+    finding = Finding(
+        finding_id="F001",
+        rule_id="PY005_DYNAMIC_EXEC",
+        severity=Severity.HIGH,
+        category="dynamic-execution",
+        file_path="pkg/mod.py",
+        line_start=1,
+        line_end=1,
+        snippet="eval(payload)",
+        message="Dynamic execution was detected.",
+        confidence=0.9,
+        tags=["dynamic-execution"],
+        citations=["CHASE"],
+    )
+
+    def failing_transport(request: ProviderRequest) -> str:
+        _ = request
+        raise TimeoutError("model timed out")
+
+    explanation = explain_from_evidence(
+        [finding],
+        provider="ollama-local",
+        transport=failing_transport,
+        timeout_seconds=1,
+    )
+
+    assert explanation.used_fallback is True
+    assert explanation.fallback_reason == "model timed out"
+    assert explanation.sentences
+    assert all("[F001]" in sentence for sentence in explanation.sentences)

@@ -38,6 +38,7 @@ CITATIONS: dict[str, str] = {
     "PYTHON_TARFILE": "Python tarfile extraction filters documentation.",
     "GEMINI": "Google Gemini API structured output documentation.",
     "OLLAMA": "Ollama API and cloud documentation.",
+    "OSV": "OSV.dev public vulnerability database and API for open-source packages.",
     "MALWARE_EXAMPLES": (
         "Public reports and datasets from Datadog, Unit42, Fortinet, and "
         "ReversingLabs for package-name examples only."

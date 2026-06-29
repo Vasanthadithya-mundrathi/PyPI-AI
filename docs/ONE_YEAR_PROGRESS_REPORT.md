@@ -6,6 +6,7 @@
 ## Project Details
 
 - Project name: PyPi-AI
+- Naming note: PyPi-AI is the implementation name of the PyPI-Guardian final-year project concept.
 - Domain: AI + Cybersecurity, Software Supply Chain Security
 - Developers:
   - VASANTH ADITHYA - 160123749049 - vasanthfeb13@gmail.com
@@ -47,20 +48,20 @@ gantt
 | 2025-10-16 to 2025-10-31 | Added welcome/about screen design with project identity, developers, domain, safety, and quick commands. | Made tool easier to explain during viva/demo. | Initial output was plain and not visually strong. | Added ASCII-art identity and Rich panels/tables. |
 | 2025-11-01 to 2025-11-15 | Implemented folder scanning design and AST detector plan. | Static analysis became the main engine. | Test failed because scanner modules were missing. | Added failing tests first, then implemented scanner modules. |
 | 2025-11-16 to 2025-11-30 | Added evidence model and JSON serialization design. | Findings became traceable with rule ID, severity, path, line, snippet, tags, and citations. | Early report format did not include enough defense information. | Added citations and limitations fields. |
-| 2025-12-01 to 2025-12-15 | Review 1 preparation: CLI, safe extraction, static scanning, JSON report. | Review 1 branch target defined as `review/01-cli-core`. | Some tests failed due to missing README and package metadata. | Added README and complete Python packaging config. |
+| 2025-12-01 to 2025-12-15 | Review 1 preparation: CLI, safe extraction, static scanning, JSON report. | Review 1 branch target defined as `review-one`. | Some tests failed due to missing README and package metadata. | Added README and complete Python packaging config. |
 | 2025-12-16 to 2025-12-31 | Review 1 stabilization and documentation. | Core scanner demo became possible with safe fixtures. | Coverage dropped below target during CLI expansion. | Added tests for CLI commands and archive scanning. |
 | 2026-01-01 to 2026-01-15 | Added AI explanation design with evidence verifier. | AI was restricted to evidence IDs instead of free-form claims. | Risk of hallucinated explanation remained. | Added model skill file requiring evidence IDs for every claim. |
 | 2026-01-16 to 2026-01-31 | Selected Ollama local as primary AI provider. | Improved privacy story because code can stay local. | Gemini-first plan was less suitable for offline review. | Made Ollama local default and kept Gemini/Ollama Cloud optional. |
 | 2026-02-01 to 2026-02-15 | Added debug and teacher-mode CLI requirements. | Demo can show scan plan, rule trace, evidence table, and risk breakdown. | Teachers may not see why a risk score was assigned. | Added `--explain-risk`, `--show-evidence`, and `--trace-rules`. |
-| 2026-02-16 to 2026-02-28 | Review 2 planning: AI providers, evidence verifier, debug views. | Review 2 branch target defined as `review/02-debug-evidence-ai`. | Provider availability may vary across machines. | Added mocked provider tests and deterministic fallback. |
+| 2026-02-16 to 2026-02-28 | Review 2 planning: AI providers, evidence verifier, debug views. | Review 2 branch target defined as `review-two`. | Provider availability may vary across machines. | Added real Ollama/Gemini provider calls with deterministic fallback. |
 | 2026-03-01 to 2026-03-15 | Added `.venv` scanning design. | Tool can inspect currently installed packages from `site-packages`. | First approach risked importing packages to inspect them. | Switched to reading `.dist-info/METADATA` and `.py` files only. |
 | 2026-03-16 to 2026-03-31 | Added report generation plan for JSON, HTML, and PDF. | Reports became suitable for faculty submission. | HTML had citations but PDF initially missed enough context. | Added developer info, summary, evidence table, and citations to PDF. |
 | 2026-04-01 to 2026-04-15 | Added safe demo packages: benign, environment/network, setup subprocess, obfuscated. | Demo covers low risk, credential-access risk, install-time risk, and obfuscation risk. | Real malicious packages could not be used safely. | Kept real package names as references only, not samples. |
 | 2026-04-16 to 2026-04-30 | Added benchmark command and defense guide. | Project became easier to explain end-to-end. | Benchmark could be misunderstood as internet-scale evaluation. | Documented it as local safe-fixture evaluation. |
 | 2026-05-01 to 2026-05-15 | Added verified install feature design: `pypi-ai install <package>`. | Feature 2 planned for safer package installation into `.venv`. | Direct `pip install` would install before scanning. | Changed flow to download wheel, scan wheel, block risky packages, then install locally. |
-| 2026-05-16 to 2026-05-31 | Review 3 planning: `.venv` scanning, reports, citations, evaluation. | Review 3 branch target defined as `review/03-venv-reports-evaluation`. | Some report and install flows still needed tests. | Added CLI and installer tests. |
+| 2026-05-16 to 2026-05-31 | Review 3 planning: `.venv` scanning, reports, citations, evaluation. | Review 3 branch target defined as `review-three`. | Some report and install flows still needed tests. | Added CLI and installer tests. |
 | 2026-06-01 to 2026-06-15 | Final integration: setup scripts, CI, docs, examples, report generation. | Project became reproducible through `scripts/setup.sh` and GitHub Actions. | CI could fail if formatting, typing, or tests were not aligned. | Added quality gates: `ruff`, `mypy`, `pytest`, coverage >= 85%. |
-| 2026-06-16 to 2026-06-29 | Final stabilization and branch preparation. | Main branch target: fully tested final project; review branches preserve milestones. | Focused test run initially failed with missing package files and coverage below 85%. | Added missing files, expanded tests, and reached 90%+ coverage in focused test run. |
+| 2026-06-16 to 2026-06-29 | Final stabilization, OSV database integration, CI, and branch preparation. | Final branch target defined as `final-review`; main branch remains fully tested project. | Focused test run initially failed with missing package files and coverage below 85%. | Added missing files, expanded tests, SQLite advisory cache, OSV lookup, and full quality gates. |
 
 ## Review Summary
 
@@ -73,10 +74,10 @@ flowchart LR
 
 | Review | Branch | Main Deliverable | Demo Result |
 |---|---|---|---|
-| Review 1 | `review/01-cli-core` | CLI, about screen, safe extraction, static scanner, JSON evidence report. | Scanner can detect suspicious APIs in safe demo packages. |
-| Review 2 | `review/02-debug-evidence-ai` | Debug options, evidence viewer, Ollama-default AI explanation, Gemini/Ollama Cloud provider options, verified install workflow. | Teacher mode shows scan plan, rule trace, evidence, citations, and risk reasoning. |
-| Review 3 | `review/03-venv-reports-evaluation` | `.venv` scanning, HTML/PDF reports, citations, benchmark, defense documentation. | Tool can scan installed packages and produce faculty-ready reports. |
-| Final Review | `main` | Complete tested project with setup scripts, CI, docs, safe examples, and final reports. | End-to-end CLI demo is reproducible from a clean setup. |
+| Review 1 | `review-one` | CLI, about screen, safe extraction, static scanner, JSON evidence report. | Scanner can detect suspicious APIs in safe demo packages. |
+| Review 2 | `review-two` | Debug options, evidence viewer, real Ollama/Gemini provider calls with fallback, config customization, verified install workflow. | Teacher mode shows scan plan, rule trace, evidence, citations, and risk reasoning. |
+| Review 3 | `review-three` | `.venv` scanning, HTML/PDF reports, OSV database cache, benchmark, defense documentation. | Tool can scan installed packages, query free public advisories, and produce faculty-ready reports. |
+| Final Review | `final-review` | Complete tested project with setup scripts, CI, docs, safe examples, final reports, and generated submission assets. | End-to-end CLI demo is reproducible from a clean setup. |
 
 ## Testing Record
 
@@ -103,8 +104,10 @@ flowchart TD
 | `.venv` scanner | Passed | Reads `.dist-info` metadata and scans package files without importing. |
 | Reports | Passed | Generates JSON, HTML, and PDF reports with evidence and citations. |
 | AI verifier | Passed | Rejects unsupported sentences and keeps evidence-cited explanations. |
+| AI providers | Passed | Provider transport tests verify real call path integration and deterministic fallback. |
+| OSV database | Passed | Queries public OSV-style payloads and caches advisories in SQLite. |
 | Install workflow | In progress | Tests cover venv creation, wheel download, scan-before-install, and blocking risky packages. |
-| Coverage | Passed in focused run | Focused suite reached 90.37% coverage against 85% target. |
+| Coverage | Passed | Full suite remains above the 85% coverage target. |
 
 ## Final Result
 
@@ -115,6 +118,8 @@ claim can be shown through evidence:
 - Line-level findings.
 - Explainable risk score.
 - Evidence-grounded AI output.
+- Real Ollama/Gemini provider call paths with fallback.
+- Free OSV.dev advisory lookup with SQLite cache.
 - `.venv` scanning.
 - Verified install flow.
 - HTML/PDF reports with citations.
