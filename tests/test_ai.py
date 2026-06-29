@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 from pypi_ai.ai import (
+    DEFAULT_OLLAMA_CLOUD_MODEL,
+    FALLBACK_OLLAMA_CLOUD_MODEL,
     EvidenceVerifier,
     build_provider_prompt,
     explain_from_evidence,
     provider_health,
+    resolve_model,
 )
 from pypi_ai.models import Finding, Severity
 
@@ -80,5 +83,14 @@ def test_provider_health_messages() -> None:
     assert "Ollama local" in provider_health("ollama-local")
     assert "Gemini" in provider_health("gemini")
     assert "Ollama Cloud" in provider_health("ollama-cloud")
+    assert DEFAULT_OLLAMA_CLOUD_MODEL in provider_health("ollama-cloud")
+    assert FALLBACK_OLLAMA_CLOUD_MODEL in provider_health("ollama-cloud")
     assert "deterministic" in provider_health("none")
     assert "unknown provider" in provider_health("other")
+
+
+def test_resolve_model_defaults_to_fast_defensible_models() -> None:
+    assert resolve_model("ollama-cloud", None) == "glm-5.2:cloud"
+    assert resolve_model("ollama-local", None) == "llama3.2:latest"
+    assert resolve_model("gemini", None) == "gemini-2.5-flash"
+    assert resolve_model("ollama-cloud", "minimax-m3:cloud") == "minimax-m3:cloud"

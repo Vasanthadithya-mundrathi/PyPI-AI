@@ -10,7 +10,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from pypi_ai.ai import explain_from_evidence, provider_health
+from pypi_ai.ai import DEFAULT_OLLAMA_CLOUD_MODEL, explain_from_evidence, provider_health
 from pypi_ai.constants import (
     ASCII_ART,
     CITATIONS,
@@ -40,6 +40,7 @@ rules_app = typer.Typer(help="List detector rules.")
 examples_app = typer.Typer(help="List safe and public-reference examples.")
 benchmark_app = typer.Typer(help="Run local benchmark fixtures.")
 model_app = typer.Typer(help="Check AI model provider configuration.")
+theme_app = typer.Typer(help="Preview terminal colors and severity styles.")
 
 app.add_typer(report_app, name="report")
 app.add_typer(evidence_app, name="evidence")
@@ -47,6 +48,7 @@ app.add_typer(rules_app, name="rules")
 app.add_typer(examples_app, name="examples")
 app.add_typer(benchmark_app, name="benchmark")
 app.add_typer(model_app, name="model")
+app.add_typer(theme_app, name="theme")
 
 console = Console()
 
@@ -100,6 +102,10 @@ def scan(
         str,
         typer.Option("--provider", help="AI provider: ollama-local, gemini, ollama-cloud, none."),
     ] = "ollama-local",
+    model: Annotated[
+        str | None,
+        typer.Option("--model", help="Provider model name, such as glm-5.2:cloud."),
+    ] = None,
     report_format: Annotated[
         str,
         typer.Option("--format", help="Output format: json, html, pdf, all."),
@@ -114,7 +120,10 @@ def scan(
 ) -> None:
     """Scan a package folder, wheel, or source distribution."""
     quiet = bool(ctx.obj and ctx.obj.get("quiet"))
-    result = scan_path(target, dry_run=dry_run, trace_rules=trace_rules)
+    try:
+        result = scan_path(target, dry_run=dry_run, trace_rules=trace_rules)
+    except ValueError as exc:
+        raise typer.BadParameter(str(exc)) from exc
     if teacher_mode or debug:
         _print_scan_plan(result)
     if verbose:
@@ -128,7 +137,7 @@ def scan(
     if show_citations:
         _print_citations()
     if not no_ai and provider != "none" and not quiet:
-        explanation = explain_from_evidence(result.findings, provider=provider)
+        explanation = explain_from_evidence(result.findings, provider=provider, model=model)
         console.print(
             Panel(
                 "\n".join(explanation.sentences) or "No findings to explain.",
@@ -167,7 +176,10 @@ def scan_venv_command(
 ) -> None:
     """Scan installed packages inside a .venv without importing them."""
     _ = ctx
-    result = scan_virtualenv(venv_path, dry_run=dry_run, trace_rules=trace_rules)
+    try:
+        result = scan_virtualenv(venv_path, dry_run=dry_run, trace_rules=trace_rules)
+    except FileNotFoundError as exc:
+        raise typer.BadParameter(str(exc)) from exc
     if teacher_mode or debug:
         _print_scan_plan(result)
     if trace_rules:
@@ -324,9 +336,30 @@ def model_test(
     provider: Annotated[
         str, typer.Option("--provider", help="Provider to check.")
     ] = "ollama-local",
+    model: Annotated[str | None, typer.Option("--model", help="Model name to check.")] = None,
 ) -> None:
     """Check AI model provider configuration."""
-    console.print(provider_health(provider))
+    console.print(provider_health(provider, model))
+
+
+@theme_app.command("preview")
+def theme_preview() -> None:
+    """Preview PyPi-AI terminal colors for teacher demos."""
+    table = Table(title="Theme preview")
+    table.add_column("Element")
+    table.add_column("Style")
+    table.add_column("Example")
+    rows = [
+        ("logo", "bold white", "[bold white]PyPi-AI[/bold white]"),
+        ("option", "cyan", "[cyan]--teacher-mode[/cyan]"),
+        ("success", "green", "[green]Package verified[/green]"),
+        ("warning", "yellow", "[yellow]Medium risk evidence[/yellow]"),
+        ("error", "red", "[red]Install blocked[/red]"),
+        ("critical", "bold red", "[bold red]Critical finding[/bold red]"),
+    ]
+    for element, style, example in rows:
+        table.add_row(element, style, example)
+    console.print(table)
 
 
 @app.command()
@@ -355,6 +388,7 @@ def print_about(*, compact: bool) -> None:
         "Safety: scans statically and never executes untrusted package code.\n"
         "Targets: folder, .whl, .tar.gz, .venv, installed packages.\n"
         "AI modes: Ollama local default, deterministic only, Gemini, Ollama Cloud.\n"
+        f"Preferred cloud model: {DEFAULT_OLLAMA_CLOUD_MODEL}.\n"
         "Research anchor: CHASE and evidence-grounded LLM explanations.\n\n"
         "Developers:\n"
         f"- {DEVELOPERS[0]['name']} - {DEVELOPERS[0]['roll']} - {DEVELOPERS[0]['email']}\n"
@@ -412,11 +446,18 @@ def _emit_or_write_report(
     show_citations: bool,
 ) -> None:
     formats = [item.strip() for item in report_format.split(",")]
+    supported = {"json", "html", "pdf", "all"}
+    unsupported = [item for item in formats if item not in supported]
+    if unsupported:
+        raise typer.BadParameter(f"Unsupported report format: {', '.join(unsupported)}")
     if output is not None or any(item in {"html", "pdf", "all"} for item in formats):
         output_base = output or Path("reports") / "scan"
-        paths = render_report(
-            result, output_base=output_base, formats=formats, show_citations=show_citations
-        )
+        try:
+            paths = render_report(
+                result, output_base=output_base, formats=formats, show_citations=show_citations
+            )
+        except ValueError as exc:
+            raise typer.BadParameter(str(exc)) from exc
         console.print("Reports written:")
         for path in paths:
             console.print(str(path))

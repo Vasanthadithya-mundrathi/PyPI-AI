@@ -3,7 +3,9 @@
 PyPi-AI is an evidence-grounded static scanner for suspicious Python packages.
 It inspects package folders, wheels, source distributions, and virtual environments
 without executing untrusted package code. Ollama local is the primary/default AI
-provider; Gemini and Ollama Cloud are optional API-key backed providers.
+provider; Ollama Cloud prefers `glm-5.2:cloud` when the account has access, with
+`minimax-m3:cloud` documented as the tested fallback on this machine. Gemini is
+kept as an optional API-key backed provider.
 
 ## Developers
 
@@ -18,6 +20,8 @@ pypi-ai
 pypi-ai scan examples/safe_packages/benign --teacher-mode --show-evidence
 pypi-ai scan-venv .venv --teacher-mode --format json
 pypi-ai install requests --venv .venv
+pypi-ai model test --provider ollama-cloud
+pypi-ai theme preview
 ```
 
 ## Safety

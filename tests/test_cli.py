@@ -30,6 +30,7 @@ def test_about_command_shows_full_project_information() -> None:
     assert "Ollama local" in result.output
     assert "default" in result.output
     assert "Ollama Cloud" in result.output
+    assert "glm-5.2:cloud" in result.output
 
 
 def test_quiet_suppresses_scan_banner(tmp_path) -> None:
@@ -99,7 +100,12 @@ def test_utility_commands_are_visible(tmp_path) -> None:
     assert "termcolour" in runner.invoke(app, ["examples", "list"]).output
     assert runner.invoke(app, ["model", "test"]).exit_code == 0
     assert "Ollama local" in runner.invoke(app, ["model", "test"]).output
+    cloud_model = runner.invoke(app, ["model", "test", "--provider", "ollama-cloud"])
+    assert cloud_model.exit_code == 0
+    assert "glm-5.2:cloud" in cloud_model.output
     assert runner.invoke(app, ["doctor"]).exit_code == 0
+    assert runner.invoke(app, ["theme", "preview"]).exit_code == 0
+    assert "Theme preview" in runner.invoke(app, ["theme", "preview"]).output
     assert runner.invoke(app, ["evidence", "show", str(report_path)]).exit_code == 0
     assert runner.invoke(app, ["explain", str(report_path)]).exit_code == 0
     render_base = tmp_path / "rendered"
@@ -127,3 +133,31 @@ def test_scan_fail_on_exits_nonzero_for_threshold(tmp_path) -> None:
     result = runner.invoke(app, ["scan", str(package_dir), "--fail-on", "medium"])
 
     assert result.exit_code == 2
+
+
+def test_scan_missing_target_has_clean_error(tmp_path) -> None:
+    result = runner.invoke(app, ["scan", str(tmp_path / "missing")])
+
+    assert result.exit_code != 0
+    assert "Unsupported scan target" in result.output
+    assert "Traceback" not in result.output
+
+
+def test_scan_venv_missing_target_has_clean_error(tmp_path) -> None:
+    result = runner.invoke(app, ["scan-venv", str(tmp_path / ".venv")])
+
+    assert result.exit_code != 0
+    assert "No site-packages directory found" in result.output
+    assert "Traceback" not in result.output
+
+
+def test_scan_invalid_report_format_has_clean_error(tmp_path) -> None:
+    package_dir = tmp_path / "pkg"
+    package_dir.mkdir()
+    (package_dir / "module.py").write_text("VALUE = 1\n", encoding="utf-8")
+
+    result = runner.invoke(app, ["scan", str(package_dir), "--format", "xml"])
+
+    assert result.exit_code != 0
+    assert "Unsupported report format" in result.output
+    assert "Traceback" not in result.output

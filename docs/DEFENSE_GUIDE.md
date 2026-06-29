@@ -99,6 +99,12 @@ Ollama local is the default provider because it is privacy-friendly and can run
 without sending code outside the machine. Gemini and Ollama Cloud can be enabled
 later through API keys when internet-backed explanations are required.
 
+Preferred Ollama Cloud model: `glm-5.2:cloud`.
+
+Tested fallback on this machine: `minimax-m3:cloud`. During runtime QA,
+`glm-5.2:cloud` reached Ollama Cloud but returned a subscription-required
+`403 Forbidden`; `minimax-m3:cloud` successfully completed a live cloud check.
+
 ## `.venv` Scanning
 
 `pypi-ai scan-venv .venv` locates `site-packages`, reads `.dist-info/METADATA`,
@@ -126,6 +132,8 @@ uv run pypi-ai scan examples/safe_packages/env_network --teacher-mode --debug --
 uv run pypi-ai scan examples/safe_packages/obfuscated --teacher-mode --debug --trace-rules --show-evidence --format all --output reports/obfuscated-demo
 uv run pypi-ai scan-venv .venv --teacher-mode --format json
 uv run pypi-ai install requests --venv .venv --dry-run
+uv run pypi-ai model test --provider ollama-cloud
+uv run pypi-ai theme preview
 ```
 
 ## Verified Install Feature

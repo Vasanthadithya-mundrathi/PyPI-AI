@@ -44,6 +44,33 @@ def test_scan_path_deduplicates_same_rule_on_same_line(tmp_path) -> None:
     assert len(obfuscation_findings) == 1
 
 
+def test_scan_path_reads_pyproject_metadata(tmp_path) -> None:
+    package_dir = tmp_path / "pkg"
+    package_dir.mkdir()
+    (package_dir / "pyproject.toml").write_text(
+        '[project]\nname = "actual-name"\nversion = "2.3.4"\n',
+        encoding="utf-8",
+    )
+    (package_dir / "module.py").write_text("eval('1')\n", encoding="utf-8")
+
+    result = scan_path(package_dir)
+
+    assert result.findings[0].package_name == "actual-name"
+    assert result.findings[0].package_version == "2.3.4"
+
+
+def test_invalid_pyproject_does_not_block_static_scan(tmp_path) -> None:
+    package_dir = tmp_path / "pkg"
+    package_dir.mkdir()
+    (package_dir / "pyproject.toml").write_text("[project\n", encoding="utf-8")
+    (package_dir / "module.py").write_text("eval('1')\n", encoding="utf-8")
+
+    result = scan_path(package_dir)
+
+    assert result.findings[0].package_name == "pkg"
+    assert result.findings[0].rule_id == "PY005_DYNAMIC_EXEC"
+
+
 def test_scan_path_dry_run_returns_scan_plan_without_findings(tmp_path) -> None:
     package_dir = tmp_path / "pkg"
     package_dir.mkdir()
