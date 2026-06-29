@@ -47,7 +47,7 @@ def test_quiet_suppresses_scan_banner(tmp_path) -> None:
     assert '"findings"' in result.output
 
 
-def test_teacher_mode_debug_options_are_visible(tmp_path) -> None:
+def test_review_mode_debug_options_are_visible(tmp_path) -> None:
     package_dir = tmp_path / "pkg"
     package_dir.mkdir()
     (package_dir / "danger.py").write_text(
@@ -59,7 +59,7 @@ def test_teacher_mode_debug_options_are_visible(tmp_path) -> None:
         [
             "scan",
             str(package_dir),
-            "--teacher-mode",
+            "--review-mode",
             "--debug",
             "--trace-rules",
             "--show-evidence",
@@ -75,6 +75,35 @@ def test_teacher_mode_debug_options_are_visible(tmp_path) -> None:
     assert "Evidence" in result.output
     assert "Risk breakdown" in result.output
     assert "PY001_ENV_ACCESS" in result.output
+
+
+def test_legacy_demo_mode_option_is_removed_from_help() -> None:
+    result = runner.invoke(app, ["scan", "--help"])
+    removed_option = "--" + "teach" + "er-mode"
+
+    assert result.exit_code == 0
+    assert "--review-mode" in result.output
+    assert removed_option not in result.output
+
+
+def test_color_flag_forces_ansi_output() -> None:
+    result = runner.invoke(app, ["--color", "theme", "preview"])
+
+    assert result.exit_code == 0
+    assert "\x1b[" in result.output
+
+
+def test_json_output_stays_plain_when_color_is_forced(tmp_path, monkeypatch) -> None:
+    package_dir = tmp_path / "pkg"
+    package_dir.mkdir()
+    (package_dir / "safe.py").write_text("VALUE = 1\n", encoding="utf-8")
+    monkeypatch.setenv("PYPI_AI_COLOR", "always")
+
+    result = runner.invoke(app, ["scan", str(package_dir), "--format", "json"])
+
+    assert result.exit_code == 0
+    assert "\x1b[" not in result.output
+    assert '"findings": []' in result.output
 
 
 def test_utility_commands_are_visible(tmp_path) -> None:
@@ -161,6 +190,7 @@ def test_scan_invalid_report_format_has_clean_error(tmp_path) -> None:
 
     assert result.exit_code != 0
     assert "Unsupported report format" in result.output
+    assert "AI Explanation" not in result.output
     assert "Traceback" not in result.output
 
 
@@ -238,3 +268,25 @@ def test_scan_ai_timeout_option_is_passed_to_provider(tmp_path, monkeypatch) -> 
 
     assert result.exit_code == 0
     assert captured == [0.25]
+
+
+def test_report_render_missing_file_has_clean_error(tmp_path) -> None:
+    result = runner.invoke(app, ["report", "render", str(tmp_path / "missing.json")])
+
+    assert result.exit_code != 0
+    assert "Report file not found" in result.output
+    assert "Traceback" not in result.output
+
+
+def test_install_command_failure_has_clean_error(tmp_path, monkeypatch) -> None:
+    def fail_install(*args, **kwargs):
+        _ = args, kwargs
+        raise RuntimeError("pip download failed")
+
+    monkeypatch.setattr("pypi_ai.cli.install_verified_package", fail_install)
+
+    result = runner.invoke(app, ["install", "idna==3.10", "--venv", str(tmp_path / ".venv")])
+
+    assert result.exit_code != 0
+    assert "pip download failed" in result.output
+    assert "Traceback" not in result.output

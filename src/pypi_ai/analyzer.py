@@ -32,6 +32,7 @@ SECRET_PATTERNS = [
     re.compile(r"sk-[A-Za-z0-9]{20,}"),
     re.compile(r"(?i)(api[_-]?key|secret|token|password)\s*[:=]\s*['\"][^'\"]{8,}"),
 ]
+BASE64_TOKEN = re.compile(r"^[A-Za-z0-9+/]+={0,2}$")
 
 
 class StaticAnalyzer(ast.NodeVisitor):
@@ -105,14 +106,11 @@ class StaticAnalyzer(ast.NodeVisitor):
         if any(pattern.search(value) for pattern in SECRET_PATTERNS):
             self._add("PY013_SECRET_PATTERN_IN_CODE", node)
             return
-        if len(value) >= 24 and _entropy(value) >= 4.2:
+        token = value.strip()
+        if _looks_high_entropy_token(token):
             self._add("PY004_OBFUSCATION", node)
             return
-        if len(value) >= 8:
-            try:
-                base64.b64decode(value, validate=True)
-            except Exception:
-                return
+        if _looks_like_base64_payload(token):
             self._add("PY004_OBFUSCATION", node)
 
     def _apply_dotted_rules(self, dotted: str, node: ast.AST) -> None:
@@ -172,6 +170,38 @@ class StaticAnalyzer(ast.NodeVisitor):
         if isinstance(node, ast.Call):
             return self._dotted_name(node.func)
         return ""
+
+
+def _looks_high_entropy_token(value: str) -> bool:
+    if len(value) < 32 or any(char.isspace() for char in value):
+        return False
+    if _character_class_count(value) < 3:
+        return False
+    return _entropy(value) >= 4.2
+
+
+def _looks_like_base64_payload(value: str) -> bool:
+    if len(value) < 16 or len(value) % 4 != 0 or not BASE64_TOKEN.fullmatch(value):
+        return False
+    if value.rstrip("=").isidentifier():
+        return False
+    if _character_class_count(value.rstrip("=")) < 2:
+        return False
+    try:
+        decoded = base64.b64decode(value, validate=True)
+    except Exception:
+        return False
+    return len(decoded) >= 8
+
+
+def _character_class_count(value: str) -> int:
+    classes = [
+        any(char.islower() for char in value),
+        any(char.isupper() for char in value),
+        any(char.isdigit() for char in value),
+        any(not char.isalnum() for char in value),
+    ]
+    return sum(classes)
 
 
 def analyze_python_file(

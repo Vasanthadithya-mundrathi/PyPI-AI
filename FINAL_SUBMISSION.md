@@ -124,7 +124,7 @@ Python developers frequently rely on third-party packages from the Python Packag
 
 **PyPi-AI** is a defensive static-analysis framework for suspicious Python package detection and is the implementation name of the **PyPI-Guardian** final-year project concept. The tool scans package folders, wheel archives, source distributions, and installed packages inside a virtual environment without importing or executing untrusted package code. It extracts metadata, analyzes Python syntax trees, identifies suspicious API usage, queries the free OSV.dev advisory database when enabled, records evidence with file paths and line numbers, computes an explainable risk score, and generates JSON, HTML, and PDF reports. An evidence-grounded AI layer uses real Ollama local calls by default, supports Ollama Cloud and Gemini as optional providers, and falls back to deterministic evidence-only output when a provider is unavailable or unsupported. The project also includes a verified install workflow, `pypi-ai install <package>`, which creates a virtual environment if needed, downloads wheels, scans them, blocks risky packages, and installs only verified wheel files.
 
-The final implementation was tested using unit tests, CLI tests, report rendering tests, archive safety tests, `.venv` scanning tests, provider diagnostics, database/cache tests, and runtime edge-case checks. The current verified state contains **42 passing tests** with coverage above the required **85%** gate, clean Ruff linting, clean Ruff formatting, and clean MyPy type checking.
+The final implementation was tested using unit tests, CLI tests, report rendering tests, archive safety tests, `.venv` scanning tests, provider diagnostics, database/cache tests, and runtime edge-case checks. The current verified state contains **50 passing tests** with **85.57%** coverage, clean Ruff linting, clean Ruff formatting, and clean MyPy type checking.
 
 **Keywords:** PyPI security, software supply chain, static analysis, malicious package detection, evidence grounding, Ollama, Gemini, CLI scanner, safe extraction, virtual environment scanning.
 
@@ -188,7 +188,7 @@ The motivation for PyPi-AI is to provide a safe pre-installation and post-instal
 
 ## 1.3 Problem Statement
 
-Existing tools often focus on known vulnerabilities, dependency metadata, or broad static rules. They may not provide a teacher-friendly CLI workflow, evidence-grounded AI explanations, `.venv` scanning, verified install behavior, and report generation in one lightweight final-year project. The problem is to design and implement a safe scanner that detects suspicious Python package behavior without running untrusted code.
+Existing tools often focus on known vulnerabilities, dependency metadata, or broad static rules. They may not provide a review-friendly CLI workflow, evidence-grounded AI explanations, `.venv` scanning, verified install behavior, and report generation in one lightweight final-year project. The problem is to design and implement a safe scanner that detects suspicious Python package behavior without running untrusted code.
 
 ## 1.4 Objectives
 
@@ -196,7 +196,7 @@ Existing tools often focus on known vulnerabilities, dependency metadata, or bro
 - Detect suspicious APIs and behavior categories using deterministic rules.
 - Store evidence with file path, line number, snippet, rule ID, severity, category, and citation IDs.
 - Generate JSON, HTML, and PDF reports.
-- Provide a polished CLI with teacher-friendly debug output.
+- Provide a polished CLI with review-friendly debug output.
 - Add real Ollama local as the default AI provider and support Ollama Cloud/Gemini as optional providers.
 - Add free OSV.dev advisory lookup with local SQLite caching for faster repeat verification.
 - Verify AI explanations against evidence IDs.
@@ -259,7 +259,7 @@ The project does not download, store, import, execute, or demonstrate real malic
 | LLM hallucination risk | Free-form AI can invent claims | Evidence verifier rejects unsupported sentences |
 | Pre-installation risk | `pip install` can execute unsafe build behavior | Verified install downloads wheels first and scans them |
 | `.venv` visibility | Installed packages may already be present | `scan-venv` scans `site-packages` without imports |
-| Teacher demo clarity | Raw JSON is not enough | Rich CLI panels, evidence tables, theme preview |
+| Reviewer demo clarity | Raw JSON is not enough | Rich CLI panels, evidence tables, theme preview |
 
 ---
 
@@ -335,7 +335,7 @@ Risk levels:
 
 | Layer | Responsibility | Main Files |
 |---|---|---|
-| CLI | Commands, teacher-mode output, provider diagnostics, theme preview | `src/pypi_ai/cli.py` |
+| CLI | Commands, review-mode output, provider diagnostics, theme preview | `src/pypi_ai/cli.py` |
 | Scanner | Input detection, archive extraction, scan orchestration | `src/pypi_ai/scanner.py` |
 | Metadata | `METADATA`, `PKG-INFO`, `pyproject.toml` parsing | `src/pypi_ai/metadata.py` |
 | Analyzer | AST traversal and suspicious API matching | `src/pypi_ai/analyzer.py` |
@@ -353,7 +353,7 @@ Risk levels:
 
 ```mermaid
 flowchart LR
-    Developer["Developer / Teacher"] --> About["View About Screen"]
+    Developer["Developer / Reviewer"] --> About["View About Screen"]
     Developer --> Scan["Scan Package"]
     Developer --> ScanVenv["Scan .venv"]
     Developer --> Install["Verified Install"]
@@ -378,7 +378,7 @@ sequenceDiagram
     participant EV as Evidence Store
     participant AI as AI Verifier
     participant RP as Reporter
-    U->>CLI: pypi-ai scan target --teacher-mode
+    U->>CLI: pypi-ai scan target --review-mode
     CLI->>EX: classify and safely prepare target
     EX-->>CLI: scan root
     CLI->>SC: parse metadata and AST
@@ -426,7 +426,7 @@ The verified install command is designed to avoid installing source distribution
 
 **Table 4.1: CLI command matrix**
 
-| Command | Purpose | Teacher Demo Value |
+| Command | Purpose | Review Value |
 |---|---|---|
 | `pypi-ai` | About screen with ASCII art, developers, safety, commands | Shows identity and project scope |
 | `pypi-ai about` | Full project information | Viva introduction |
@@ -438,7 +438,7 @@ The verified install command is designed to avoid installing source distribution
 | `pypi-ai evidence show` | Show findings from JSON | Evidence defense |
 | `pypi-ai rules list` | Show detector catalog | Explain implementation |
 | `pypi-ai model test` | Show provider/model status | Ollama/Gemini defense |
-| `pypi-ai theme preview` | Preview CLI color scheme | Teacher-visible polish |
+| `pypi-ai theme preview` | Preview CLI color scheme | Review-visible polish |
 | `pypi-ai benchmark run` | Run safe fixture benchmark | Evaluation demo |
 
 ## 4.6 Algorithms
@@ -497,7 +497,7 @@ Output: installed package or blocked decision
 | Component | Selected | Alternatives Considered | Reason |
 |---|---|---|---|
 | Language | Python 3.11+ | Node.js, Go | Python packaging ecosystem and AST support |
-| CLI | Typer + Rich | argparse, Click | Better typed commands and rich teacher-friendly output |
+| CLI | Typer + Rich | argparse, Click | Better typed commands and rich review-friendly output |
 | Package manager | uv | pip + venv, Poetry | Fast setup and reproducible lockfile |
 | Static parsing | Python `ast` | regex only, dynamic import | Safer and more structured than executing code |
 | Matching | Built-in rules | Semgrep/Bandit only | Lightweight final-year implementation |
@@ -506,7 +506,7 @@ Output: installed package or blocked decision
 | AI default | Ollama local | Gemini-first | Local privacy and offline demo story |
 | Cloud AI | Ollama Cloud / Gemini | Single provider only | Flexible provider comparison |
 | Public advisory database | OSV.dev + SQLite cache | Paid reputation APIs | Free, public, fast repeat checks |
-| User settings | `.pypi-ai.toml` | Hard-coded CLI defaults | Teacher-visible customization |
+| User settings | `.pypi-ai.toml` | Hard-coded CLI defaults | Review-visible customization |
 | CI | GitHub Actions | Manual testing only | Repeatable verification |
 
 ## 5.2 AI Provider Comparison
@@ -557,8 +557,8 @@ Output: installed package or blocked decision
 
 | Verification Gate | Command | Result |
 |---|---|---|
-| Unit and CLI tests | `uv run pytest -q` | 42 passed |
-| Coverage | pytest coverage gate | Above 85% target |
+| Unit and CLI tests | `uv run pytest -q` | 50 passed |
+| Coverage | pytest coverage gate | 85.57%, above 85% target |
 | Lint | `uv run ruff check .` | Passed |
 | Formatting | `uv run ruff format --check .` | Passed |
 | Type checking | `uv run mypy` | Passed |
@@ -689,10 +689,10 @@ uv run pypi-ai about
 uv run pypi-ai rules list
 uv run pypi-ai config init
 uv run pypi-ai theme preview
-uv run pypi-ai scan examples/safe_packages/obfuscated --teacher-mode --debug --trace-rules --show-evidence --explain-risk --format json
+uv run pypi-ai scan examples/safe_packages/obfuscated --review-mode --debug --trace-rules --show-evidence --explain-risk --format json
 uv run pypi-ai scan examples/safe_packages/benign --check-osv --show-citations
 uv run pypi-ai database check requests
-uv run pypi-ai scan-venv .venv --teacher-mode --format json
+uv run pypi-ai scan-venv .venv --review-mode --format json
 uv run pypi-ai install requests --venv .venv --dry-run
 uv run pypi-ai model test --provider ollama-cloud
 uv run pytest -q

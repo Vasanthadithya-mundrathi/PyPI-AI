@@ -6,7 +6,7 @@ sequenceDiagram
     participant EV as Evidence Store
     participant AI as AI Verifier
     participant RP as Reporter
-    U->>CLI: pypi-ai scan target --teacher-mode
+    U->>CLI: pypi-ai scan target --review-mode
     CLI->>EX: classify and safely prepare target
     EX-->>CLI: scan root
     CLI->>SC: parse metadata and AST

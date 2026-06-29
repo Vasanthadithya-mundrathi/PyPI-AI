@@ -24,7 +24,7 @@ rule IDs, severity, and citations.
 
 ```mermaid
 flowchart LR
-    User["Teacher / Developer"] --> CLI["PyPi-AI CLI"]
+    User["Reviewer / Developer"] --> CLI["PyPi-AI CLI"]
     CLI --> Target{"Scan Target"}
     Target --> Folder["Package Folder"]
     Target --> Wheel["Wheel (.whl)"]
@@ -68,7 +68,7 @@ sequenceDiagram
     participant E as Extractor
     participant S as Static Analyzer
     participant R as Reporter
-    U->>C: pypi-ai scan target --teacher-mode
+    U->>C: pypi-ai scan target --review-mode
     C->>E: Identify folder/wheel/sdist safely
     E-->>C: Safe temporary scan root
     C->>S: Parse files with AST and metadata readers
@@ -145,19 +145,19 @@ flowchart LR
     AST --> Evidence["Evidence records"]
 ```
 
-## Teacher Demo Script
+## Review Demo Script
 
 ```bash
 uv run pypi-ai
 uv run pypi-ai rules list
 uv run pypi-ai examples list
-uv run pypi-ai scan examples/safe_packages/benign --teacher-mode --show-evidence
-uv run pypi-ai scan examples/safe_packages/env_network --teacher-mode --debug --trace-rules --show-evidence --show-citations --explain-risk
-uv run pypi-ai scan examples/safe_packages/obfuscated --teacher-mode --debug --trace-rules --show-evidence --format all --output reports/obfuscated-demo
+uv run pypi-ai scan examples/safe_packages/benign --review-mode --show-evidence
+uv run pypi-ai scan examples/safe_packages/env_network --review-mode --debug --trace-rules --show-evidence --show-citations --explain-risk
+uv run pypi-ai scan examples/safe_packages/obfuscated --review-mode --debug --trace-rules --show-evidence --format all --output reports/obfuscated-demo
 uv run pypi-ai scan examples/safe_packages/benign --check-osv --show-citations
 uv run pypi-ai database check requests
 uv run pypi-ai config init
-uv run pypi-ai scan-venv .venv --teacher-mode --format json
+uv run pypi-ai scan-venv .venv --review-mode --format json
 uv run pypi-ai install requests --venv .venv --dry-run
 uv run pypi-ai model test --provider ollama-cloud
 uv run pypi-ai theme preview

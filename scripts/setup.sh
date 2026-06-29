@@ -14,6 +14,6 @@ Setup complete.
 
 Try:
   uv run pypi-ai
-  uv run pypi-ai scan examples/safe_packages/benign --teacher-mode --show-evidence
-  uv run pypi-ai scan-venv .venv --teacher-mode --format json
+  uv run pypi-ai scan examples/safe_packages/benign --review-mode --show-evidence
+  uv run pypi-ai scan-venv .venv --review-mode --format json
 MSG

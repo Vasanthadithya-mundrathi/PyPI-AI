@@ -20,8 +20,8 @@ the **PyPI-Guardian** final-year project concept.
 ```bash
 ./scripts/setup.sh
 pypi-ai
-pypi-ai scan examples/safe_packages/benign --teacher-mode --show-evidence
-pypi-ai scan-venv .venv --teacher-mode --format json
+pypi-ai scan examples/safe_packages/benign --review-mode --show-evidence
+pypi-ai scan-venv .venv --review-mode --format json
 pypi-ai install requests --venv .venv
 pypi-ai scan examples/safe_packages/benign --check-osv
 pypi-ai database check requests

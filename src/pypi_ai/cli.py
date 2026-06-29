@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Annotated
@@ -59,13 +60,49 @@ app.add_typer(database_app, name="database")
 console = Console()
 
 
+def _make_console(force_color: bool | None = None) -> Console:
+    if force_color is True:
+        return Console(force_terminal=True, color_system="truecolor")
+    if force_color is False:
+        return Console(no_color=True)
+    color_setting = os.environ.get("PYPI_AI_COLOR", "").lower()
+    force_color_env = os.environ.get("FORCE_COLOR", "").lower()
+    if color_setting in {"always", "1", "true", "yes", "force"} or force_color_env in {
+        "1",
+        "true",
+        "yes",
+    }:
+        return Console(force_terminal=True, color_system="truecolor")
+    if color_setting in {"never", "0", "false", "no"} or "NO_COLOR" in os.environ:
+        return Console(no_color=True)
+    return Console()
+
+
+def _configure_console(force_color: bool | None = None) -> None:
+    global console
+    console = _make_console(force_color)
+
+
 @app.callback()
 def main(
     ctx: typer.Context,
     quiet: Annotated[
         bool, typer.Option("--quiet", help="Suppress nonessential banner output.")
     ] = False,
+    color: Annotated[
+        bool,
+        typer.Option("--color", help="Force ANSI colors, useful when piping output to tee."),
+    ] = False,
+    no_color: Annotated[bool, typer.Option("--no-color", help="Disable ANSI colors.")] = False,
 ) -> None:
+    if color and no_color:
+        raise typer.BadParameter("Use only one of --color or --no-color")
+    if color:
+        _configure_console(True)
+    elif no_color:
+        _configure_console(False)
+    else:
+        _configure_console(None)
     ctx.obj = {"quiet": quiet}
     if ctx.invoked_subcommand is None:
         print_about(compact=False)
@@ -97,8 +134,8 @@ def scan(
     explain_risk: Annotated[
         bool, typer.Option("--explain-risk", help="Show risk breakdown.")
     ] = False,
-    teacher_mode: Annotated[
-        bool, typer.Option("--teacher-mode", help="Enable explanation-friendly output.")
+    review_mode: Annotated[
+        bool, typer.Option("--review-mode", help="Enable review-friendly output.")
     ] = False,
     dry_run: Annotated[
         bool, typer.Option("--dry-run", help="Show scan plan without scanning.")
@@ -148,6 +185,7 @@ def scan(
         raise typer.BadParameter(str(exc)) from exc
     provider_value = provider or config.default_provider
     report_format_value = report_format or config.default_report_format
+    _parse_report_formats(report_format_value)
     show_citations_value = show_citations or config.show_citations
     fail_on_value = fail_on or (config.risk_threshold if config_path is not None else None)
     advisory_lookup: AdvisoryLookup | None = None
@@ -168,7 +206,7 @@ def scan(
         )
     except ValueError as exc:
         raise typer.BadParameter(str(exc)) from exc
-    if teacher_mode or debug:
+    if review_mode or debug:
         _print_scan_plan(result)
     if verbose:
         console.print(f"[white]Scanned files:[/white] {result.summary.files_scanned}")
@@ -176,7 +214,7 @@ def scan(
         _print_rule_trace(result.rule_trace)
     if explain_risk:
         _print_risk(result)
-    if show_evidence or teacher_mode:
+    if show_evidence or review_mode:
         _print_evidence(result)
     if show_citations_value:
         _print_citations()
@@ -210,8 +248,8 @@ def scan_venv_command(
     show_evidence: Annotated[
         bool, typer.Option("--show-evidence", help="Print evidence table.")
     ] = False,
-    teacher_mode: Annotated[
-        bool, typer.Option("--teacher-mode", help="Enable explanation-friendly output.")
+    review_mode: Annotated[
+        bool, typer.Option("--review-mode", help="Enable review-friendly output.")
     ] = False,
     dry_run: Annotated[
         bool, typer.Option("--dry-run", help="Show scan plan without scanning.")
@@ -225,15 +263,16 @@ def scan_venv_command(
 ) -> None:
     """Scan installed packages inside a .venv without importing them."""
     _ = ctx
+    _parse_report_formats(report_format)
     try:
         result = scan_virtualenv(venv_path, dry_run=dry_run, trace_rules=trace_rules)
     except FileNotFoundError as exc:
         raise typer.BadParameter(str(exc)) from exc
-    if teacher_mode or debug:
+    if review_mode or debug:
         _print_scan_plan(result)
     if trace_rules:
         _print_rule_trace(result.rule_trace)
-    if show_evidence or teacher_mode:
+    if show_evidence or review_mode:
         _print_evidence(result)
     _emit_or_write_report(result, report_format, output, show_citations=False)
 
@@ -248,6 +287,7 @@ def scan_installed_command(
     ] = "json",
 ) -> None:
     """Scan installed packages by deriving the virtualenv from a Python executable path."""
+    _parse_report_formats(report_format)
     venv_root = python.parent.parent
     result = scan_virtualenv(venv_root)
     _emit_or_write_report(result, report_format, None, show_citations=False)
@@ -286,7 +326,10 @@ def install(
     if dry_run:
         return
     severity = _parse_severity(fail_on)
-    decision = install_verified_package(package, venv_path=venv_path, fail_on=severity)
+    try:
+        decision = install_verified_package(package, venv_path=venv_path, fail_on=severity)
+    except RuntimeError as exc:
+        raise typer.BadParameter(str(exc)) from exc
     if decision == InstallDecision.BLOCKED:
         console.print(
             "[bold red]Install blocked because downloaded wheel evidence met "
@@ -307,7 +350,13 @@ def report_render(
     ] = "html",
 ) -> None:
     """Render an existing JSON report into HTML/PDF."""
-    payload = json.loads(input_json.read_text(encoding="utf-8"))
+    _parse_report_formats(report_format)
+    if not input_json.exists():
+        raise typer.BadParameter(f"Report file not found: {input_json}")
+    try:
+        payload = json.loads(input_json.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise typer.BadParameter(f"Invalid JSON report: {input_json}") from exc
     result = scan_result_from_dict(payload)
     paths = render_report(
         result,
@@ -388,19 +437,19 @@ def model_test(
     model: Annotated[str | None, typer.Option("--model", help="Model name to check.")] = None,
 ) -> None:
     """Check AI model provider configuration."""
-    console.print(provider_health(provider, model))
+    console.out(provider_health(provider, model), highlight=False)
 
 
 @theme_app.command("preview")
 def theme_preview() -> None:
-    """Preview PyPi-AI terminal colors for teacher demos."""
+    """Preview PyPi-AI terminal colors and severity styles."""
     table = Table(title="Theme preview")
     table.add_column("Element")
     table.add_column("Style")
     table.add_column("Example")
     rows = [
         ("logo", "bold white", "[bold white]PyPi-AI[/bold white]"),
-        ("option", "cyan", "[cyan]--teacher-mode[/cyan]"),
+        ("option", "cyan", "[cyan]--review-mode[/cyan]"),
         ("success", "green", "[green]Package verified[/green]"),
         ("warning", "yellow", "[yellow]Medium risk evidence[/yellow]"),
         ("error", "red", "[red]Install blocked[/red]"),
@@ -433,7 +482,7 @@ def config_show(
         config = load_config(path)
     except ValueError as exc:
         raise typer.BadParameter(str(exc)) from exc
-    console.print_json(json.dumps(config.to_dict()))
+    _print_plain_json(config.to_dict())
 
 
 @database_app.command("check")
@@ -472,7 +521,7 @@ def doctor() -> None:
     console.print(f"{PROJECT_NAME} {VERSION}")
     console.print(f"Python: {sys.version.split()[0]}")
     console.print("Static scanner: available")
-    console.print(provider_health("none"))
+    console.out(provider_health("none"), highlight=False)
 
 
 def print_about(*, compact: bool) -> None:
@@ -489,10 +538,10 @@ def print_about(*, compact: bool) -> None:
         "Developers:\n"
         f"- {DEVELOPERS[0]['name']} - {DEVELOPERS[0]['roll']} - {DEVELOPERS[0]['email']}\n"
         f"- {DEVELOPERS[1]['name']} - {DEVELOPERS[1]['roll']} - {DEVELOPERS[1]['email']}\n\n"
-        "Teacher demo commands:\n"
-        "pypi-ai scan examples/safe_packages/benign --teacher-mode --show-evidence\n"
+        "Review commands:\n"
+        "pypi-ai scan examples/safe_packages/benign --review-mode --show-evidence\n"
         "pypi-ai scan examples/safe_packages/obfuscated --debug --trace-rules --explain-risk\n"
-        "pypi-ai scan-venv .venv --teacher-mode --format json\n"
+        "pypi-ai scan-venv .venv --review-mode --format json\n"
     )
     console.print(Panel(body, title="Welcome"))
 
@@ -541,11 +590,7 @@ def _emit_or_write_report(
     output: Path | None,
     show_citations: bool,
 ) -> None:
-    formats = [item.strip() for item in report_format.split(",")]
-    supported = {"json", "html", "pdf", "all"}
-    unsupported = [item for item in formats if item not in supported]
-    if unsupported:
-        raise typer.BadParameter(f"Unsupported report format: {', '.join(unsupported)}")
+    formats = _parse_report_formats(report_format)
     if output is not None or any(item in {"html", "pdf", "all"} for item in formats):
         output_base = output or Path("reports") / "scan"
         try:
@@ -558,7 +603,21 @@ def _emit_or_write_report(
         for path in paths:
             console.print(str(path))
         return
-    console.print_json(json.dumps(result.to_dict()))
+    _print_plain_json(result.to_dict())
+
+
+def _print_plain_json(payload: object) -> None:
+    """Emit automation-safe JSON even when terminal color is forced."""
+    console.out(json.dumps(payload, indent=2), highlight=False)
+
+
+def _parse_report_formats(report_format: str) -> list[str]:
+    formats = [item.strip() for item in report_format.split(",")]
+    supported = {"json", "html", "pdf", "all"}
+    unsupported = [item for item in formats if item not in supported]
+    if unsupported:
+        raise typer.BadParameter(f"Unsupported report format: {', '.join(unsupported)}")
+    return formats
 
 
 def _handle_fail_on(level: str, fail_on: str | None) -> None:

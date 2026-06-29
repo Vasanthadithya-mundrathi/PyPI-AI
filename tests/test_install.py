@@ -19,6 +19,13 @@ class FakeRunner:
         self.commands.append(command)
 
 
+class MissingPipRunner(FakeRunner):
+    def __call__(self, command: list[str]) -> None:
+        self.commands.append(command)
+        if command[-2:] == ["pip", "--version"]:
+            raise RuntimeError("No module named pip")
+
+
 def clean_result(target: Path) -> ScanResult:
     return ScanResult(
         project={"name": "PyPi-AI", "version": "0.1.0", "developers": [], "safety": "static"},
@@ -109,6 +116,32 @@ def test_install_verified_package_blocks_high_risk_wheel(tmp_path) -> None:
 
     assert decision == InstallDecision.BLOCKED
     assert not any("install" in command for command in runner_calls.commands)
+
+
+def test_install_verified_package_bootstraps_pip_in_existing_venv(tmp_path) -> None:
+    runner_calls = MissingPipRunner()
+    venv_path = tmp_path / ".venv"
+    python_executable = venv_path / "bin" / "python"
+    python_executable.parent.mkdir(parents=True)
+    python_executable.write_text("# fake python\n", encoding="utf-8")
+
+    def downloader(package: str, download_dir: Path, python_executable: Path) -> list[Path]:
+        _ = package, python_executable
+        download_dir.mkdir(parents=True)
+        wheel = download_dir / "safe-1.0-py3-none-any.whl"
+        wheel.write_text("wheel-bytes", encoding="utf-8")
+        return [wheel]
+
+    decision = install_verified_package(
+        "safe",
+        venv_path=venv_path,
+        runner=runner_calls,
+        downloader=downloader,
+        scanner=clean_result,
+    )
+
+    assert decision == InstallDecision.INSTALLED
+    assert [str(python_executable), "-m", "ensurepip", "--upgrade"] in runner_calls.commands
 
 
 def test_install_cli_dry_run_is_visible(tmp_path) -> None:

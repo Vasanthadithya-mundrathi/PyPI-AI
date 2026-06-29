@@ -45,6 +45,35 @@ def test_scan_path_deduplicates_same_rule_on_same_line(tmp_path) -> None:
     assert len(obfuscation_findings) == 1
 
 
+def test_scan_path_does_not_flag_normal_unicode_table_strings(tmp_path) -> None:
+    package_dir = tmp_path / "idna_like"
+    package_dir.mkdir()
+    (package_dir / "module.py").write_text(
+        '"""IDNA Mapping Table from UTS46."""\n'
+        'scripts = {"Hiragana": (0x304100003097,), "Katakana": (0x30A0000030FB,)}\n'
+        'errors = ["InvalidCodepoint"]\n'
+        'message = "InvalidCodepointContext"\n',
+        encoding="utf-8",
+    )
+
+    result = scan_path(package_dir)
+
+    assert all(finding.rule_id != "PY004_OBFUSCATION" for finding in result.findings)
+
+
+def test_scan_path_detects_compact_encoded_literal(tmp_path) -> None:
+    package_dir = tmp_path / "encoded_literal"
+    package_dir.mkdir()
+    (package_dir / "module.py").write_text(
+        'payload = "A9f$X2pLq7#zR1mT8vN3bC6yH0kW5sJ!"\n',
+        encoding="utf-8",
+    )
+
+    result = scan_path(package_dir)
+
+    assert any(finding.rule_id == "PY004_OBFUSCATION" for finding in result.findings)
+
+
 def test_scan_path_reads_pyproject_metadata(tmp_path) -> None:
     package_dir = tmp_path / "pkg"
     package_dir.mkdir()

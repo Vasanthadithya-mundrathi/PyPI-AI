@@ -6,7 +6,7 @@ Scope:
 
 - Runtime edge-case hardening.
 - Clean CLI errors for missing scan targets and missing virtual environments.
-- Debug and teacher-mode improvements.
+- Debug and review-mode improvements.
 - AI evidence verifier and deterministic fallback behavior.
 - Verified install workflow tests.
 

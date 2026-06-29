@@ -5,14 +5,14 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
 uv run pypi-ai scan examples/safe_packages/benign \
-  --teacher-mode \
+  --review-mode \
   --show-evidence \
   --show-citations \
   --format all \
   --output reports/benign-demo
 
 uv run pypi-ai scan examples/safe_packages/env_network \
-  --teacher-mode \
+  --review-mode \
   --debug \
   --trace-rules \
   --show-evidence \
@@ -22,7 +22,7 @@ uv run pypi-ai scan examples/safe_packages/env_network \
   --output reports/env-network-demo
 
 uv run pypi-ai scan examples/safe_packages/obfuscated \
-  --teacher-mode \
+  --review-mode \
   --debug \
   --trace-rules \
   --show-evidence \

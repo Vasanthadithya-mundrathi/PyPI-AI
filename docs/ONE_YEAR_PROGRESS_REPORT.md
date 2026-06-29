@@ -29,7 +29,7 @@ gantt
     Evidence model and JSON reports       :done, a2, 2025-11-01, 2025-12-31
     section Review 2
     AI verifier and Ollama default        :done, b1, 2026-01-01, 2026-01-31
-    Debug options and teacher mode        :done, b2, 2026-02-01, 2026-02-28
+    Debug options and review mode         :done, b2, 2026-02-01, 2026-02-28
     Verified install workflow             :active, b3, 2026-05-01, 2026-05-31
     section Review 3
     Venv scanning and report exports      :done, c1, 2026-03-01, 2026-04-30
@@ -44,7 +44,7 @@ gantt
 | 2025-08-16 to 2025-08-31 | Designed initial architecture: extractor, metadata analyzer, static analyzer, evidence store, report generator. | Architecture accepted for Review 1 planning. | The first architecture mixed scanner logic and UI too tightly. | Split CLI/scanner/report layers. |
 | 2025-09-01 to 2025-09-15 | Created rule list for environment access, subprocess, network clients, dynamic execution, obfuscation, unsafe deserialization, and native code APIs. | Produced defendable detector categories. | Early rules caused duplicate findings on the same line. | Planned finding IDs and structured evidence records. |
 | 2025-09-16 to 2025-09-30 | Studied Python wheel and source distribution formats. | Confirmed `.whl` is zip-based and `.tar.gz` must be extracted safely. | Path traversal risk found during tar extraction design. | Added safe extraction requirements and archive member validation. |
-| 2025-10-01 to 2025-10-15 | Implemented project skeleton and first CLI design plan. | CLI-first approach selected for teacher-friendly demo. | Dashboard-first idea delayed core scanner work. | Deferred dashboard and extension until CLI is complete. |
+| 2025-10-01 to 2025-10-15 | Implemented project skeleton and first CLI design plan. | CLI-first approach selected for review-friendly demo. | Dashboard-first idea delayed core scanner work. | Deferred dashboard and extension until CLI is complete. |
 | 2025-10-16 to 2025-10-31 | Added welcome/about screen design with project identity, developers, domain, safety, and quick commands. | Made tool easier to explain during viva/demo. | Initial output was plain and not visually strong. | Added ASCII-art identity and Rich panels/tables. |
 | 2025-11-01 to 2025-11-15 | Implemented folder scanning design and AST detector plan. | Static analysis became the main engine. | Test failed because scanner modules were missing. | Added failing tests first, then implemented scanner modules. |
 | 2025-11-16 to 2025-11-30 | Added evidence model and JSON serialization design. | Findings became traceable with rule ID, severity, path, line, snippet, tags, and citations. | Early report format did not include enough defense information. | Added citations and limitations fields. |
@@ -52,7 +52,7 @@ gantt
 | 2025-12-16 to 2025-12-31 | Review 1 stabilization and documentation. | Core scanner demo became possible with safe fixtures. | Coverage dropped below target during CLI expansion. | Added tests for CLI commands and archive scanning. |
 | 2026-01-01 to 2026-01-15 | Added AI explanation design with evidence verifier. | AI was restricted to evidence IDs instead of free-form claims. | Risk of hallucinated explanation remained. | Added model skill file requiring evidence IDs for every claim. |
 | 2026-01-16 to 2026-01-31 | Selected Ollama local as primary AI provider. | Improved privacy story because code can stay local. | Gemini-first plan was less suitable for offline review. | Made Ollama local default and kept Gemini/Ollama Cloud optional. |
-| 2026-02-01 to 2026-02-15 | Added debug and teacher-mode CLI requirements. | Demo can show scan plan, rule trace, evidence table, and risk breakdown. | Teachers may not see why a risk score was assigned. | Added `--explain-risk`, `--show-evidence`, and `--trace-rules`. |
+| 2026-02-01 to 2026-02-15 | Added debug and review-mode CLI requirements. | Demo can show scan plan, rule trace, evidence table, and risk breakdown. | Reviewers may not see why a risk score was assigned. | Added `--explain-risk`, `--show-evidence`, and `--trace-rules`. |
 | 2026-02-16 to 2026-02-28 | Review 2 planning: AI providers, evidence verifier, debug views. | Review 2 branch target defined as `review-two`. | Provider availability may vary across machines. | Added real Ollama/Gemini provider calls with deterministic fallback. |
 | 2026-03-01 to 2026-03-15 | Added `.venv` scanning design. | Tool can inspect currently installed packages from `site-packages`. | First approach risked importing packages to inspect them. | Switched to reading `.dist-info/METADATA` and `.py` files only. |
 | 2026-03-16 to 2026-03-31 | Added report generation plan for JSON, HTML, and PDF. | Reports became suitable for faculty submission. | HTML had citations but PDF initially missed enough context. | Added developer info, summary, evidence table, and citations to PDF. |
@@ -75,7 +75,7 @@ flowchart LR
 | Review | Branch | Main Deliverable | Demo Result |
 |---|---|---|---|
 | Review 1 | `review-one` | CLI, about screen, safe extraction, static scanner, JSON evidence report. | Scanner can detect suspicious APIs in safe demo packages. |
-| Review 2 | `review-two` | Debug options, evidence viewer, real Ollama/Gemini provider calls with fallback, config customization, verified install workflow. | Teacher mode shows scan plan, rule trace, evidence, citations, and risk reasoning. |
+| Review 2 | `review-two` | Debug options, evidence viewer, real Ollama/Gemini provider calls with fallback, config customization, verified install workflow. | Review mode shows scan plan, rule trace, evidence, citations, and risk reasoning. |
 | Review 3 | `review-three` | `.venv` scanning, HTML/PDF reports, OSV database cache, benchmark, defense documentation. | Tool can scan installed packages, query free public advisories, and produce faculty-ready reports. |
 | Final Review | `final-review` | Complete tested project with setup scripts, CI, docs, safe examples, final reports, and generated submission assets. | End-to-end CLI demo is reproducible from a clean setup. |
 

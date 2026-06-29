@@ -50,15 +50,18 @@ def _ensure_venv(venv_path: Path, runner: CommandRunner) -> Path:
     python_executable = _venv_python(venv_path)
     if not python_executable.exists():
         runner([sys.executable, "-m", "venv", str(venv_path)])
+    try:
+        runner([str(python_executable), "-m", "pip", "--version"])
+    except RuntimeError:
+        runner([str(python_executable), "-m", "ensurepip", "--upgrade"])
     return python_executable
 
 
 def _download_wheels(package: str, download_dir: Path, python_executable: Path) -> list[Path]:
-    _ = python_executable
     download_dir.mkdir(parents=True, exist_ok=True)
     _run_command(
         [
-            sys.executable,
+            str(python_executable),
             "-m",
             "pip",
             "download",
@@ -115,4 +118,9 @@ def _venv_python(venv_path: Path) -> Path:
 
 
 def _run_command(command: list[str]) -> None:
-    subprocess.run(command, check=True)
+    completed = subprocess.run(command, check=False, capture_output=True, text=True)
+    if completed.returncode != 0:
+        detail = completed.stderr.strip() or completed.stdout.strip() or "no output"
+        raise RuntimeError(
+            f"Command failed with exit code {completed.returncode}: {' '.join(command)}\n{detail}"
+        )

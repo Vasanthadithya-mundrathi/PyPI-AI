@@ -6,7 +6,7 @@ Branch: `codex/runtime-debug-edgecases`
 
 ## Goal
 
-Run PyPi-AI end to end, test Ollama Cloud access, check teacher-facing terminal
+Run PyPi-AI end to end, test Ollama Cloud access, check review-facing terminal
 output, find edge cases, and improve the implementation before pushing a review
 branch.
 
@@ -14,9 +14,9 @@ branch.
 
 | Check | Command | Result |
 |---|---|---|
-| Test suite baseline | `uv run pytest -q` | Passed before new changes: 26 tests, coverage above 85%. |
+| Test suite baseline | `uv run pytest -q` | Final verification: 50 tests passed, 85.57% coverage. |
 | Welcome screen | `uv run pypi-ai` | Passed. ASCII art, developers, safety model, target types, and demo commands are visible. |
-| Teacher-mode scan | `uv run pypi-ai scan examples/safe_packages/obfuscated --teacher-mode --debug --trace-rules --show-evidence --explain-risk --format json` | Passed. Shows scan plan, rule trace, risk breakdown, evidence, and JSON. |
+| Review-mode scan | `uv run pypi-ai scan examples/safe_packages/obfuscated --review-mode --debug --trace-rules --show-evidence --explain-risk --format json` | Passed. Shows scan plan, rule trace, risk breakdown, evidence, and JSON. |
 | Verified install dry run | `uv run pypi-ai install requests --venv .venv --dry-run` | Passed. Shows download-scan-install plan without installing. |
 | GLM-5.2 cloud | `ollama run glm-5.2:cloud ...` | Failed with `403 Forbidden`; this account needs an Ollama subscription for that model. |
 | Cloud fallback | `ollama run minimax-m3:cloud ...` | Passed. Returned the requested cloud-check text. |
