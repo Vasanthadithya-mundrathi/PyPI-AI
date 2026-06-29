@@ -1,3 +1,16 @@
-Generate after fetching branches:
+Command:
 
 git diff review-one..review-two --stat
+
+Result:
+
+README.md                    |  6 +++-
+docs/DEFENSE_GUIDE.md        |  8 ++++++
+docs/RUNTIME_DEBUG_REPORT.md | 66 ++++++++++++++++++++++++++++++++++++++++++++
+src/pypi_ai/ai.py            | 39 ++++++++++++++++++++++----
+src/pypi_ai/cli.py           | 57 ++++++++++++++++++++++++++++++++------
+src/pypi_ai/metadata.py      | 22 +++++++++++++++
+tests/test_ai.py             | 12 ++++++++
+tests/test_cli.py            | 34 +++++++++++++++++++++++
+tests/test_scanner.py        | 27 ++++++++++++++++++
+9 files changed, 256 insertions(+), 15 deletions(-)

@@ -1,3 +1,18 @@
-Generate after fetching branches:
+Command:
 
 git diff review-two..review-three --stat
+
+Result:
+
+FINAL_SUBMISSION.md                                | 707 +++++++++++++++++++++
+docs/assets/final-submission/activity-scan-risk.mmd | 21 +
+docs/assets/final-submission/evidence-grounding-flow.svg | 40 ++
+docs/assets/final-submission/provider-decision.mmd | 8 +
+docs/assets/final-submission/pypi-ai-system-architecture.svg | 77 +++
+docs/assets/final-submission/report-generation-pipeline.svg | 33 +
+docs/assets/final-submission/results-verification-summary.svg | 27 +
+docs/assets/final-submission/review-branch-strategy.mmd | 10 +
+docs/assets/final-submission/sequence-scan-report.mmd | 18 +
+docs/assets/final-submission/use-case-diagram.mmd | 13 +
+docs/assets/final-submission/verified-install-flow.svg | 40 ++
+16 files changed, 994 insertions(+)
