@@ -1,0 +1,8 @@
+flowchart TD
+    Start["Need AI explanation provider"] --> Local{"Privacy / no cloud needed?"}
+    Local -- Yes --> OllamaLocal["Ollama local default: llama3.2:latest"]
+    Local -- No --> Cloud{"Ollama Cloud access?"}
+    Cloud -- GLM subscription --> GLM["Preferred: glm-5.2:cloud"]
+    Cloud -- No GLM subscription --> Fallback["Tested fallback: minimax-m3:cloud"]
+    Cloud -- No cloud access --> Deterministic["Deterministic evidence-only fallback"]
+    Start --> Gemini["Optional: gemini-2.5-flash with GEMINI_API_KEY"]

@@ -1,0 +1,21 @@
+flowchart TD
+    Start([Start]) --> Target["Receive scan target"]
+    Target --> Type{"Target type?"}
+    Type --> Folder["Folder"]
+    Type --> Wheel["Wheel"]
+    Type --> Sdist["Sdist"]
+    Type --> Venv[".venv"]
+    Wheel --> SafeExtract["Safe extraction"]
+    Sdist --> SafeExtract
+    Folder --> Parse["Parse metadata and Python files"]
+    SafeExtract --> Parse
+    Venv --> SitePackages["Find site-packages and dist-info"]
+    SitePackages --> Parse
+    Parse --> Rules["Apply static rules"]
+    Rules --> Evidence["Create evidence records"]
+    Evidence --> Score["Calculate risk score"]
+    Score --> Decision{"Risk above threshold?"}
+    Decision -- Yes --> Block["Block install / warn user"]
+    Decision -- No --> Report["Generate report"]
+    Block --> Report
+    Report --> End([End])

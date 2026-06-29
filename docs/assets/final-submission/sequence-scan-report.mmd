@@ -1,0 +1,18 @@
+sequenceDiagram
+    participant U as User
+    participant CLI as PyPi-AI CLI
+    participant EX as Safe Extractor
+    participant SC as Static Scanner
+    participant EV as Evidence Store
+    participant AI as AI Verifier
+    participant RP as Reporter
+    U->>CLI: pypi-ai scan target --teacher-mode
+    CLI->>EX: classify and safely prepare target
+    EX-->>CLI: scan root
+    CLI->>SC: parse metadata and AST
+    SC-->>EV: evidence records
+    EV-->>CLI: risk score + findings
+    CLI->>AI: build evidence-only explanation
+    AI-->>CLI: verified sentences
+    CLI->>RP: render JSON / HTML / PDF
+    RP-->>U: report and evidence table

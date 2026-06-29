@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="540" viewBox="0 0 1180 540" role="img" aria-labelledby="title desc">
+  <title id="title">Report generation pipeline</title>
+  <desc id="desc">Evidence records are converted into JSON, HTML, PDF, and viva-ready explanation material.</desc>
+  <defs>
+    <style>
+      .box{fill:#f8fafc;stroke:#111827;stroke-width:2}.doc{fill:#eef2ff;stroke:#4f46e5;stroke-width:2}.good{fill:#ecfdf5;stroke:#16a34a;stroke-width:2}.txt{font-family:Arial,Helvetica,sans-serif;font-size:20px;fill:#111827}.small{font-size:16px}.title{font-size:32px;font-weight:700}.arrow{stroke:#111827;stroke-width:3;fill:none;marker-end:url(#arrow)}.caption{font-size:17px;fill:#374151}
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M2,2 L10,6 L2,10 z" fill="#111827"/></marker>
+  </defs>
+  <rect width="1180" height="540" fill="#fff"/>
+  <text x="590" y="52" text-anchor="middle" class="txt title">Report Generation Pipeline</text>
+  <rect x="70" y="160" width="210" height="90" rx="14" class="box"/>
+  <text x="175" y="193" text-anchor="middle" class="txt">Evidence Records</text>
+  <text x="175" y="221" text-anchor="middle" class="txt small">rule, path, line, snippet</text>
+  <rect x="345" y="160" width="210" height="90" rx="14" class="box"/>
+  <text x="450" y="193" text-anchor="middle" class="txt">Risk + Citations</text>
+  <text x="450" y="221" text-anchor="middle" class="txt small">score and source map</text>
+  <rect x="620" y="160" width="210" height="90" rx="14" class="good"/>
+  <text x="725" y="193" text-anchor="middle" class="txt">Verified Explanation</text>
+  <text x="725" y="221" text-anchor="middle" class="txt small">valid evidence IDs only</text>
+  <rect x="895" y="95" width="210" height="70" rx="14" class="doc"/>
+  <text x="1000" y="138" text-anchor="middle" class="txt">JSON</text>
+  <rect x="895" y="205" width="210" height="70" rx="14" class="doc"/>
+  <text x="1000" y="248" text-anchor="middle" class="txt">HTML</text>
+  <rect x="895" y="315" width="210" height="70" rx="14" class="doc"/>
+  <text x="1000" y="358" text-anchor="middle" class="txt">PDF</text>
+  <path d="M280 205 L345 205" class="arrow"/>
+  <path d="M555 205 L620 205" class="arrow"/>
+  <path d="M830 205 C860 175,870 130,895 130" class="arrow"/>
+  <path d="M830 205 L895 240" class="arrow"/>
+  <path d="M830 205 C860 260,870 350,895 350" class="arrow"/>
+  <text x="590" y="485" text-anchor="middle" class="txt caption">Figure 5.1: Multi-format report generation from a single evidence model</text>
+</svg>
