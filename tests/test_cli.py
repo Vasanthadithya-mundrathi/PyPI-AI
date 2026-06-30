@@ -1,11 +1,18 @@
 from __future__ import annotations
 
+import re
+
 from typer.testing import CliRunner
 
 from pypi_ai.ai import Explanation
 from pypi_ai.cli import app
 
 runner = CliRunner()
+ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
+
+
+def _plain_output(output: str) -> str:
+    return ANSI_RE.sub("", output)
 
 
 def test_root_command_shows_about_welcome() -> None:
@@ -85,13 +92,30 @@ def test_review_mode_debug_options_are_visible(tmp_path) -> None:
     assert "PY001_ENV_ACCESS" in result.output
 
 
-def test_legacy_demo_mode_option_is_removed_from_help() -> None:
+def test_review_mode_option_is_visible_and_legacy_teacher_option_removed() -> None:
     result = runner.invoke(app, ["scan", "--help"])
     removed_option = "--" + "teach" + "er-mode"
+    plain_output = _plain_output(result.output)
 
     assert result.exit_code == 0
-    assert "--review-mode" in result.output
-    assert removed_option not in result.output
+    assert "--review-mode" in plain_output
+    assert removed_option not in plain_output
+
+
+def test_review_mode_option_is_accepted_and_legacy_teacher_option_rejected(
+    tmp_path,
+) -> None:
+    package_dir = tmp_path / "pkg"
+    package_dir.mkdir()
+    (package_dir / "module.py").write_text("VALUE = 1\n", encoding="utf-8")
+    removed_option = "--" + "teach" + "er-mode"
+
+    accepted = runner.invoke(app, ["scan", str(package_dir), "--review-mode", "--format", "json"])
+    rejected = runner.invoke(app, ["scan", str(package_dir), removed_option])
+
+    assert accepted.exit_code == 0
+    assert '"findings": []' in accepted.output
+    assert rejected.exit_code != 0
 
 
 def test_color_flag_forces_ansi_output() -> None:
