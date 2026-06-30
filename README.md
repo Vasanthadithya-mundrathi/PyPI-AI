@@ -27,6 +27,21 @@ uv run pypi-ai model test --provider ollama-cloud
 uv run pypi-ai theme preview
 ```
 
+## Agentic CHASE Continuation Branch
+
+The `agentic-chase-continuation` branch extends PyPi-AI into a CHASE-inspired
+Plan-and-Execute workflow:
+
+```bash
+uv run pypi-ai agent scan requests --no-sandbox
+uv run pypi-ai agent scan ./package.whl
+uv run pypi-ai agent scan-venv .venv
+uv run pypi-ai agent batch requirements.txt --max-package-time 300
+uv run pypi-ai agent sample-live --sample-size 3
+```
+
+Research docs for this branch are in [docs/research](docs/research).
+
 ## Final Review Artifacts
 
 - Final submission draft: [FINAL_SUBMISSION.md](FINAL_SUBMISSION.md)

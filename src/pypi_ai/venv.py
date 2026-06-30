@@ -9,6 +9,20 @@ from pypi_ai.models import Finding, PackageMetadata, ScanPlan, ScanResult, ScanS
 from pypi_ai.risk import calculate_risk
 from pypi_ai.scanner import LIMITATIONS
 
+NON_RUNTIME_PARTS = {
+    "__pycache__",
+    ".git",
+    ".venv",
+    "venv",
+    "test",
+    "tests",
+    "testing",
+    "benchmark",
+    "benchmarks",
+    "docs",
+    "doc",
+}
+
 
 def find_site_packages(venv_path: Path | str) -> Path:
     root = Path(venv_path)
@@ -85,8 +99,20 @@ def _discover_package_files(
         if package_root.is_file() and package_root.suffix == ".py":
             package_files[package_root] = [package_root]
         elif package_root.is_dir():
-            package_files[package_root] = sorted(package_root.rglob("*.py"))
+            package_files[package_root] = [
+                path
+                for path in sorted(package_root.rglob("*.py"))
+                if not _is_non_runtime_file(package_root, path)
+            ]
     return package_files
+
+
+def _is_non_runtime_file(package_root: Path, file_path: Path) -> bool:
+    try:
+        relative_parts = file_path.relative_to(package_root).parts
+    except ValueError:
+        relative_parts = file_path.parts
+    return bool(NON_RUNTIME_PARTS.intersection(relative_parts[:-1]))
 
 
 def _venv_result(

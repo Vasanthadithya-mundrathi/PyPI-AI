@@ -39,6 +39,27 @@ def test_scan_venv_scans_installed_package_without_importing(tmp_path) -> None:
     assert any(f.rule_id == "PY002_SUBPROCESS" for f in result.findings)
 
 
+def test_scan_venv_skips_packaged_tests(tmp_path) -> None:
+    venv = tmp_path / ".venv"
+    site_packages = venv / "lib" / "python3.11" / "site-packages"
+    package = site_packages / "cleanpkg"
+    tests = package / "tests"
+    dist_info = site_packages / "cleanpkg-1.0.0.dist-info"
+    tests.mkdir(parents=True)
+    dist_info.mkdir(parents=True)
+    (package / "__init__.py").write_text("VALUE = 1\n", encoding="utf-8")
+    (tests / "test_cli.py").write_text(
+        "import subprocess\nsubprocess.run(['python', '--version'])\n",
+        encoding="utf-8",
+    )
+    (dist_info / "METADATA").write_text("Name: cleanpkg\nVersion: 1.0.0\n", encoding="utf-8")
+
+    result = scan_venv(venv)
+
+    assert result.summary.files_scanned == 1
+    assert result.findings == []
+
+
 def test_scan_venv_cli_command(tmp_path) -> None:
     venv, _ = make_fake_venv(tmp_path)
 

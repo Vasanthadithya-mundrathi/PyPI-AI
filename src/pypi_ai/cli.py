@@ -11,6 +11,12 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
+from pypi_ai.agentic import (
+    TOP_PYPI_PACKAGES_URL,
+    build_live_chase_plan,
+    execute_chase_plan,
+)
+from pypi_ai.agents import run_agent_batch, run_agent_scan, run_agent_venv_scan
 from pypi_ai.ai import DEFAULT_OLLAMA_CLOUD_MODEL, explain_from_evidence, provider_health
 from pypi_ai.config import DEFAULT_CONFIG_PATH, load_config, write_default_config
 from pypi_ai.constants import (
@@ -46,6 +52,7 @@ model_app = typer.Typer(help="Check AI model provider configuration.")
 theme_app = typer.Typer(help="Preview terminal colors and severity styles.")
 config_app = typer.Typer(help="Create and inspect PyPi-AI configuration.")
 database_app = typer.Typer(help="Check free public package-intelligence databases.")
+agent_app = typer.Typer(help="Run CHASE-inspired multi-agent package analysis.")
 
 app.add_typer(report_app, name="report")
 app.add_typer(evidence_app, name="evidence")
@@ -56,6 +63,7 @@ app.add_typer(model_app, name="model")
 app.add_typer(theme_app, name="theme")
 app.add_typer(config_app, name="config")
 app.add_typer(database_app, name="database")
+app.add_typer(agent_app, name="agent")
 
 console = Console()
 
@@ -354,6 +362,120 @@ def install(
     console.print("[bold green]Package installed after static verification.[/bold green]")
 
 
+@agent_app.command("scan")
+def agent_scan_command(
+    target: Annotated[str, typer.Argument(help="PyPI name/specifier, folder, .whl, or .tar.gz.")],
+    max_package_time: Annotated[
+        int, typer.Option("--max-package-time", help="Maximum seconds for one package.")
+    ] = 300,
+    sandbox: Annotated[
+        bool,
+        typer.Option(
+            "--sandbox/--no-sandbox",
+            help="Attempt Docker sandbox behavior analysis when available.",
+        ),
+    ] = True,
+    sandbox_image: Annotated[
+        str, typer.Option("--sandbox-image", help="Docker image for sandbox probes.")
+    ] = "pypi-ai-sandbox:latest",
+    check_osv: Annotated[
+        bool, typer.Option("--check-osv", help="Check OSV.dev during dependency analysis.")
+    ] = False,
+    output: Annotated[Path | None, typer.Option("--output", help="Write JSON report.")] = None,
+) -> None:
+    """Run CHASE-inspired plan-and-execute analysis for one package target."""
+    payload = run_agent_scan(
+        target,
+        max_package_time=max_package_time,
+        sandbox=sandbox,
+        sandbox_image=sandbox_image,
+        check_osv=check_osv,
+    )
+    _emit_agent_payload(payload, output)
+
+
+@agent_app.command("scan-venv")
+def agent_scan_venv_command(
+    venv_path: Annotated[Path, typer.Argument(help="Virtual environment folder.")],
+    max_package_time: Annotated[
+        int, typer.Option("--max-package-time", help="Maximum seconds for the venv scan.")
+    ] = 300,
+    output: Annotated[Path | None, typer.Option("--output", help="Write JSON report.")] = None,
+) -> None:
+    """Run the agent workflow over installed packages in a virtual environment."""
+    payload = run_agent_venv_scan(venv_path, max_package_time=max_package_time)
+    _emit_agent_payload(payload, output)
+
+
+@agent_app.command("batch")
+def agent_batch_command(
+    requirements_file: Annotated[Path, typer.Argument(help="requirements.txt file.")],
+    max_package_time: Annotated[
+        int, typer.Option("--max-package-time", help="Maximum seconds per package.")
+    ] = 300,
+    sandbox: Annotated[
+        bool,
+        typer.Option(
+            "--sandbox/--no-sandbox",
+            help="Attempt Docker sandbox behavior analysis when available.",
+        ),
+    ] = True,
+    sandbox_image: Annotated[
+        str, typer.Option("--sandbox-image", help="Docker image for sandbox probes.")
+    ] = "pypi-ai-sandbox:latest",
+    output: Annotated[Path | None, typer.Option("--output", help="Write JSON report.")] = None,
+) -> None:
+    """Analyze every concrete package specifier from a requirements file."""
+    payload = run_agent_batch(
+        requirements_file,
+        max_package_time=max_package_time,
+        sandbox=sandbox,
+        sandbox_image=sandbox_image,
+    )
+    _emit_agent_payload(payload, output)
+
+
+@agent_app.command("sample-live")
+def agent_sample_live_command(
+    sample_size: Annotated[
+        int, typer.Option("--sample-size", help="Number of live PyPI packages to scan.")
+    ] = 3,
+    candidate_pool: Annotated[
+        int, typer.Option("--candidate-pool", help="Top-PyPI candidate pool size.")
+    ] = 250,
+    max_wheel_mb: Annotated[
+        float, typer.Option("--max-wheel-mb", help="Skip wheels larger than this.")
+    ] = 5.0,
+    seed: Annotated[
+        int | None, typer.Option("--seed", help="Optional reproducible random seed.")
+    ] = None,
+    dry_run: Annotated[
+        bool, typer.Option("--dry-run", help="Only build the live package plan.")
+    ] = False,
+    download_dir: Annotated[
+        Path, typer.Option("--download-dir", help="Where downloaded wheels are stored.")
+    ] = Path("tmp/agent-live-wheels"),
+    output: Annotated[Path | None, typer.Option("--output", help="Write JSON report.")] = None,
+) -> None:
+    """Plan and scan a rotating live sample from PyPI popularity data."""
+    try:
+        plan = build_live_chase_plan(
+            sample_size=sample_size,
+            candidate_pool=candidate_pool,
+            max_wheel_mb=max_wheel_mb,
+            seed=seed,
+            source_url=TOP_PYPI_PACKAGES_URL,
+        )
+        payload = (
+            plan.to_dict()
+            if dry_run
+            else execute_chase_plan(plan, download_dir=download_dir).to_dict()
+        )
+    except (RuntimeError, ValueError) as exc:
+        raise typer.BadParameter(str(exc)) from exc
+    _emit_agent_payload(payload, output)
+
+
 @report_app.command("render")
 def report_render(
     input_json: Annotated[Path, typer.Argument(help="Existing JSON report.")],
@@ -624,6 +746,15 @@ def _emit_or_write_report(
 def _print_plain_json(payload: object) -> None:
     """Emit automation-safe JSON even when terminal color is forced."""
     console.out(json.dumps(payload, indent=2), highlight=False)
+
+
+def _emit_agent_payload(payload: object, output: Path | None) -> None:
+    if output is None:
+        _print_plain_json(payload)
+        return
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    console.print(f"Agent report written: {output}")
 
 
 def _parse_report_formats(report_format: str) -> list[str]:

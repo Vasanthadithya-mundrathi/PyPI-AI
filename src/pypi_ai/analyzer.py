@@ -65,13 +65,13 @@ class StaticAnalyzer(ast.NodeVisitor):
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
         module = node.module or ""
         root_name = module.split(".")[0]
-        if root_name in SUSPICIOUS_IMPORT_ROOTS:
-            self._add("PY014_IMPORT_ALIAS_RISK", node)
         for alias in node.names:
             if alias.name == "*":
                 continue
             local_name = alias.asname or alias.name
             self._import_aliases[local_name] = f"{module}.{alias.name}" if module else alias.name
+            if alias.asname and root_name in SUSPICIOUS_IMPORT_ROOTS:
+                self._add("PY014_IMPORT_ALIAS_RISK", node)
         self.generic_visit(node)
 
     def visit_Attribute(self, node: ast.Attribute) -> None:

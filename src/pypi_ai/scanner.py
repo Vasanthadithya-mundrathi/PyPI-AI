@@ -141,12 +141,31 @@ def _detect_input_type(target: Path) -> str:
 
 
 def _python_files(root: Path) -> list[Path]:
-    ignored_parts = {"__pycache__", ".git", ".venv", "venv"}
-    return sorted(
-        path
-        for path in root.rglob("*.py")
-        if path.is_file() and not ignored_parts.intersection(path.parts)
-    )
+    ignored_parts = {
+        "__pycache__",
+        ".git",
+        ".venv",
+        "venv",
+        "test",
+        "tests",
+        "testing",
+        "benchmark",
+        "benchmarks",
+        "docs",
+        "doc",
+    }
+    python_files: list[Path] = []
+    for path in root.rglob("*.py"):
+        if not path.is_file():
+            continue
+        try:
+            relative_parts = path.relative_to(root).parts
+        except ValueError:
+            relative_parts = path.parts
+        if ignored_parts.intersection(relative_parts[:-1]):
+            continue
+        python_files.append(path)
+    return sorted(python_files)
 
 
 POPULAR_PACKAGE_NAMES = {

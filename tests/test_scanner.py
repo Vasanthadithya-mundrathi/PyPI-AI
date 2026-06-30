@@ -203,6 +203,24 @@ def test_scan_path_dry_run_returns_scan_plan_without_findings(tmp_path) -> None:
     assert "folder" in result.scan_plan.input_type
 
 
+def test_scan_path_skips_packaged_tests_to_reduce_false_positives(tmp_path) -> None:
+    package_dir = tmp_path / "pkg"
+    runtime_dir = package_dir / "pkg"
+    tests_dir = package_dir / "tests"
+    runtime_dir.mkdir(parents=True)
+    tests_dir.mkdir()
+    (runtime_dir / "module.py").write_text("VALUE = 1\n", encoding="utf-8")
+    (tests_dir / "test_cli.py").write_text(
+        "import subprocess\nsubprocess.run(['python', '--version'])\n",
+        encoding="utf-8",
+    )
+
+    result = scan_path(package_dir)
+
+    assert result.summary.files_scanned == 1
+    assert result.findings == []
+
+
 def test_scan_result_json_is_serializable(tmp_path) -> None:
     package_dir = tmp_path / "pkg"
     package_dir.mkdir()
